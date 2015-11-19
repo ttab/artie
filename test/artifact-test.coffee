@@ -51,3 +51,6 @@ describe 'Artifact', ->
                 res.should.have.property 'arch', 'myarch'
                 res.should.have.property 'name', 'myproject-v1.0.0-bin-myos-myarch.nar'
                 res.should.have.property 'path', '/my/dir/myproject-v1.0.0-bin-myos-myarch.nar'
+                res.should.have.property 'tag', 'v1.0.0'
+                res.should.have.property 'version', 'v1.0.0'
+                res.should.have.property 'release', true

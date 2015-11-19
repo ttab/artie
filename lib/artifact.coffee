@@ -41,10 +41,13 @@ module.exports = class Artifact
                     log.info 'Add [' + file.type.cyan + ']', file.name
                 .on 'end', (path) ->
                     resolve
-                        binary : binary
-                        os     : os
-                        arch   : arch
-                        name   : basename path
-                        path   : path
+                        binary  : binary
+                        os      : os
+                        arch    : arch
+                        name    : basename path
+                        path    : path
+                        tag     : git.tag
+                        version : git.version
+                        release : git.release
                 
                 
