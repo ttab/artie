@@ -2,13 +2,10 @@ Q = require 'when'
 
 module.exports = class Artie
 
-    constructor: (@opts, @repositories) ->
+    constructor: (@opts, @package, @repositories) ->
 
     upload: ->
-
-        # @bundle().then ->
-
-        Q()
+        @package.create()
 
     download: ->
         Q()

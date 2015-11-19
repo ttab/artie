@@ -3,6 +3,7 @@
 program   = require 'commander'
 pkg       = require './package'
 Artie     = require './lib/artie'
+Artifact  = require './lib/artifact'
 Releases  = require './lib/releases'
 GitHubApi = require 'github'
 
@@ -10,7 +11,7 @@ program.version(pkg.version)
     .option('-n, --node-version [version]')
     .option('-o, --os <os>', 'Platform [linux]', 'linux')
     .option('-a, --arch <arch>', 'Processor architecture [x64]', 'x64')
-    .option('-r, --only-releases', 'Only fetch releases')
+    .option('-r, --only-releases', 'Only fetch production ready releases')
     .option('-t, --token <oAuth token>', 'OAuth token')
 
 artie = ->
@@ -18,14 +19,16 @@ artie = ->
     github.authenticate
         type: 'oauth',
         token: program.token or process.env.GITHUB_OAUTH_TOKEN or throw 'OAuth token needed'
+    artifact = new Artifact()
     releases = new Releases(github)
-    artie    = new Artie(program, releases)
+    artie    = new Artie(program, artifact, releases)
 
 program.command('upload')
     .description('Package this project as an executable and upload it to github.')
     .action () ->
         artie().upload()
-        .then ->
+        .then (res) ->
+            console.log res
             console.log 'done'
         .catch (err) ->
             console.error 'Error', err
