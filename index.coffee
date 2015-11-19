@@ -1,5 +1,6 @@
 #!/usr/bin/env coffee
 
+log       = require 'bog'
 colors    = require 'colors'
 program   = require 'commander'
 Artie     = require './lib/artie'
@@ -31,10 +32,10 @@ program.command('upload')
     .action () ->
         artie().upload()
         .then (res) ->
-            console.log res
-            console.log 'done'
+            log.info res
+            log.info 'done'
         .catch (err) ->
-            console.error 'Error', err
+            log.error 'Error', err.red
         .done()
 
 program.command('download <owner> <repo>')
@@ -42,9 +43,9 @@ program.command('download <owner> <repo>')
     .action (owner, repo) ->
         artie().download(owner, repo)
         .then ->
-            console.log 'done'
+            log.info 'done'
         .catch (err) ->
-            console.error 'Error', err
+            log.error 'Error', err.red
         .done()
 
 program.parse(process.argv)

@@ -1,19 +1,23 @@
 nar      = require 'nar'
 basename = require('path').basename
 When     = require 'when'
+log      = require 'bog'
 
 module.exports = class Artifact
 
     constructor: (@opts, @cfg) ->
     
     create: ->
-        @cfg.fromPackageJson().then (pkg) =>
+        When.all([
+            @cfg.fromPackageJson()
+            @cfg.fromNvmrc()
+        ]).then ([pkg, nvmrc]) =>
             binary = true
             os     = @opts.os
             arch   = @opts.arch
-            node   = @opts.node
+            node   = @opts.node or nvmrc
             name   = "#{pkg.name}-#{pkg.version}-bin"
-            console.log 'Building', name.yellow
+            log.info 'Building', name.yellow
             When.promise (resolve, reject) =>
                 nar.createExec
                     binary          : binary
@@ -25,16 +29,15 @@ module.exports = class Artifact
                 .on 'error', (err) ->
                     reject err
                 .on 'info', (nar) ->
-                    console.log 'Info; ' + nar
+                    log.info 'Info; ' + nar
                 .on 'download', ->
-                    console.log 'Downloading binary...'
+                    log.info 'Downloading binary...'
                 .on 'generate', ->
-                    console.log 'Generating executable...'
+                    log.info 'Generating executable...'
                 .on 'file', (file) ->
-                    if @opts.verbose
-                        console.log 'Add [' + file.type.cyan + ']', file.name
+                    log.debug 'Add [' + file.type.cyan + ']', file.name
                 .on 'archive', (file) ->
-                    console.log 'Add [' + file.type.cyan + ']', file.name
+                    log.info 'Add [' + file.type.cyan + ']', file.name
                 .on 'end', (path) ->
                     resolve
                         binary : binary

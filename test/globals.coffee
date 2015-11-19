@@ -12,3 +12,6 @@ global.eql    = assert.deepEqual
 chai.use require('chai-as-promised')
 chai.use require('sinon-chai')
 chai.should()
+
+log = require 'bog'
+log.level 'none'

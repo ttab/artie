@@ -6,16 +6,27 @@ module.exports = class Cfg
 
     constructor: ->
 
-    fromPackageJson: ->
-        return @pgk if @pgk
-        @pkg = When.promise (resolve, reject) ->
-            findup process.cwd(), 'package.json', (err, dir) ->
+    _read: (name, fatal, fn) ->
+        When.promise (resolve, reject) ->
+            findup process.cwd(), name, (err, dir) ->
                 if err
-                    reject 'package.json not found'
+                    if fatal
+                        reject name + ' not found'
+                    else
+                        resolve undefined
                 else
-                    file = dir + '/package.json'
+                    file = dir + '/' + name
                     fs.readFile file, (err, data) ->
                         if err
                             reject 'could not read:', file
                         else
-                            resolve JSON.parse data
+                            resolve fn data
+        
+        
+    fromPackageJson: ->
+        return @pgk if @pgk
+        @pkg = @_read 'package.json', true, (data) -> JSON.parse data
+        
+    fromNvmrc: ->
+        return @nvmrc if @nvmrc
+        @nvmrc = @_read '.nvmrc', false, (data) -> data.toString().trim()
