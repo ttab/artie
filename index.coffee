@@ -1,5 +1,6 @@
 #!/usr/bin/env coffee
 
+colors      = require 'colors'
 program     = require 'commander'
 Artie       = require './lib/artie'
 Artifact    = require './lib/artifact'
@@ -8,11 +9,12 @@ PackageInfo = require './lib/package-info'
 GitHubApi   = require 'github'
 
 program.version(require('./package').version)
-    .option('-n, --node-version [version]')
+    .option('-n, --node [version]')
     .option('-o, --os <os>', 'Platform [linux]', 'linux')
     .option('-a, --arch <arch>', 'Processor architecture [x64]', 'x64')
     .option('-r, --only-releases', 'Only fetch production ready releases')
     .option('-t, --token <oAuth token>', 'OAuth token')
+    .option('-v, --verbose')
 
 artie = ->
     github = new GitHubApi version: '3.0.0'
