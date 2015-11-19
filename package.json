@@ -19,5 +19,12 @@
     "findup": "^0.1.5",
     "github": "^0.2.4",
     "nar": "^0.3.21"
+  },
+  "devDependencies": {
+    "chai": "^3.4.1",
+    "chai-as-promised": "^5.1.0",
+    "mocha": "^2.3.4",
+    "sinon": "^1.17.2",
+    "sinon-chai": "^2.8.0"
   }
 }
