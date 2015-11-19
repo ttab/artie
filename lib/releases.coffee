@@ -1,7 +1,7 @@
 
 module.exports = class Releases
 
-    constructor: (@client) ->
+    constructor: (@opts, @client) ->
 
     getDraftRelease: (owner, repo) ->
 

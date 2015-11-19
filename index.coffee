@@ -1,13 +1,13 @@
 #!/usr/bin/env coffee
 
-program   = require 'commander'
-pkg       = require './package'
-Artie     = require './lib/artie'
-Artifact  = require './lib/artifact'
-Releases  = require './lib/releases'
-GitHubApi = require 'github'
+program     = require 'commander'
+Artie       = require './lib/artie'
+Artifact    = require './lib/artifact'
+Releases    = require './lib/releases'
+PackageInfo = require './lib/package-info'
+GitHubApi   = require 'github'
 
-program.version(pkg.version)
+program.version(require('./package').version)
     .option('-n, --node-version [version]')
     .option('-o, --os <os>', 'Platform [linux]', 'linux')
     .option('-a, --arch <arch>', 'Processor architecture [x64]', 'x64')
@@ -19,9 +19,10 @@ artie = ->
     github.authenticate
         type: 'oauth',
         token: program.token or process.env.GITHUB_OAUTH_TOKEN or throw 'OAuth token needed'
-    artifact = new Artifact()
-    releases = new Releases(github)
-    artie    = new Artie(program, artifact, releases)
+    packageInfo = new PackageInfo()
+    artifact    = new Artifact(program, packageInfo)
+    releases    = new Releases(program, github)
+    artie       = new Artie(program, artifact, releases)
 
 program.command('upload')
     .description('Package this project as an executable and upload it to github.')

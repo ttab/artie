@@ -1,10 +1,11 @@
-
-When = require 'when'
+When   = require 'when'
 
 module.exports = class Artifact
 
-    constructor: (@opts) ->
-
+    constructor: (@opts, @packageInfo) ->
+    
     create: ->
-        console.log 'packing...'
-        When { name: 'mypackage', path: './mypackage' }
+        @packageInfo.get().then (info) ->
+            console.log 'info', info
+            console.log 'packing...'
+            { name: 'mypackage', path: './mypackage' }
