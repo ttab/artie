@@ -13,16 +13,17 @@ describe 'Artifact', ->
             Artifact = proxyquire '../lib/artifact', { 'nar': nar }
             opts = { os: 'myos', arch: 'myarch' }
             cfg =
+                fromGitVersion: stub().returns When { tag: 'v1.0.0', version: 'v1.0.0', release: true }
                 fromPackageJson: stub().returns When { name: 'myproject', version: '1.0.0' }
                 fromNvmrc: stub().returns When '0.12.7'
             artifact = new Artifact opts, cfg
-            setTimeout (-> emitter.emit 'end', '/my/dir/myproject-1.0.0-bin-myos-myarch.nar'), 10
+            setTimeout (-> emitter.emit 'end', '/my/dir/myproject-v1.0.0-bin-myos-myarch.nar'), 10
 
         it 'should call nar.createExec()', ->
             artifact.create().then ->
                 nar.createExec.should.have.been.calledWith match
                     binary: true
-                    file: 'myproject-1.0.0-bin'
+                    file: 'myproject-v1.0.0-bin'
                     os: 'myos'
                     arch: 'myarch'
 
@@ -48,5 +49,5 @@ describe 'Artifact', ->
                 res.should.have.property 'binary', true
                 res.should.have.property 'os', 'myos'
                 res.should.have.property 'arch', 'myarch'
-                res.should.have.property 'name', 'myproject-1.0.0-bin-myos-myarch.nar'
-                res.should.have.property 'path', '/my/dir/myproject-1.0.0-bin-myos-myarch.nar'
+                res.should.have.property 'name', 'myproject-v1.0.0-bin-myos-myarch.nar'
+                res.should.have.property 'path', '/my/dir/myproject-v1.0.0-bin-myos-myarch.nar'

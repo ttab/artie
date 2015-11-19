@@ -9,14 +9,15 @@ module.exports = class Artifact
     
     create: ->
         When.all([
+            @cfg.fromGitVersion()
             @cfg.fromPackageJson()
             @cfg.fromNvmrc()
-        ]).then ([pkg, nvmrc]) =>
+        ]).spread (git, pkg, nvmrc) =>
             binary = true
             os     = @opts.os
             arch   = @opts.arch
             node   = @opts.node or nvmrc
-            name   = "#{pkg.name}-#{pkg.version}-bin"
+            name   = "#{pkg.name}-#{git.tag}-bin"
             log.info 'Building', name.yellow
             When.promise (resolve, reject) =>
                 nar.createExec
@@ -43,7 +44,6 @@ module.exports = class Artifact
                         binary : binary
                         os     : os
                         arch   : arch
-                        node   : node
                         name   : basename path
                         path   : path
                 
