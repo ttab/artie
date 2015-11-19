@@ -4,15 +4,15 @@ When     = require 'when'
 
 module.exports = class Artifact
 
-    constructor: (@opts, @packageInfo) ->
+    constructor: (@opts, @cfg) ->
     
     create: ->
-        @packageInfo.get().then (info) =>
+        @cfg.fromPackageJson().then (pkg) =>
             binary = true
             os     = @opts.os
             arch   = @opts.arch
             node   = @opts.node
-            name   = "#{info.name}-#{info.version}-bin"
+            name   = "#{pkg.name}-#{pkg.version}-bin"
             console.log 'Building', name.yellow
             When.promise (resolve, reject) =>
                 nar.createExec

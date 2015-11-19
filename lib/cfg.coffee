@@ -2,9 +2,12 @@ fs     = require 'fs'
 findup = require 'findup'
 When   = require 'when'
 
-module.exports = class PackageInfo
+module.exports = class Cfg
 
     constructor: ->
+
+    fromPackageJson: ->
+        return @pgk if @pgk
         @pkg = When.promise (resolve, reject) ->
             findup process.cwd(), 'package.json', (err, dir) ->
                 if err
@@ -16,6 +19,3 @@ module.exports = class PackageInfo
                             reject 'could not read:', file
                         else
                             resolve JSON.parse data
-
-    get: ->
-        @pkg
