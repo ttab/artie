@@ -35,6 +35,7 @@ program.command('upload')
             log.info 'Done.'
         .catch (err) ->
             log.error err.stack.red
+            process.exit 1
         .done()
 
 program.command('download <owner> <repo>')
@@ -45,6 +46,7 @@ program.command('download <owner> <repo>')
             log.info 'Done.'
         .catch (err) ->
             log.error err.stack.red
+            process.exit 1
         .done()
 
 program.parse(process.argv)
