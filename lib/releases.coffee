@@ -14,7 +14,7 @@ module.exports = class Releases
                         if res.length is 0
                             resolve undefined
                         else
-                            matches = res.filter criteria
+                            matches = res.map(criteria).filter (m) -> m
                             if matches.length > 0
                                 resolve matches[0]
                             else

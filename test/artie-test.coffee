@@ -6,6 +6,14 @@ describe 'Artie', ->
     beforeEach ->
         artie = new Artie
 
+    describe '.parseAsset()', ->
+
+        it 'returns the os and arch for a tag release', ->
+            artie._parseAsset 'search-service-v2.0.6-bin-darwin-x64.nar'
+            .should.eql
+                os: 'darwin'
+                arch: 'x64'
+
     describe '.parseRepository()', ->
 
         it 'rejects projects without a repository in package.json', ->

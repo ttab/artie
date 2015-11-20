@@ -15,6 +15,19 @@ module.exports = class Artie
         catch err
             throw new Error "could not parse GitHub url:", url
 
+    _parseAsset: (name) ->
+        try
+            [ full, os, arch ] = name.match /-(\w+)-(\w+).nar$/
+            { os, arch }
+        catch err
+            undefined
+
+    _findAsset: (rel) =>
+        assets = rel.assets.filter (asset) =>
+            if parsed = @_parseAsset asset.name
+                return parsed.os == @opts.os and parsed.arch == @opts.arch
+        assets[0]
+
     upload: ->
         When.all([
             @cfg.fromPackageJson()
@@ -26,5 +39,9 @@ module.exports = class Artie
                 log.info "Uploading #{art.name.yellow} to #{(owner + '/' + repo + '#' + art.tag).yellow}"
                 @releases.upload owner, repo, rel.id, art.name, art.path
 
-    download: ->
-        When()
+    download: (owner, repo) ->
+        log.info "Looking for #{@opts.os.yellow}/#{@opts.arch.yellow} artifacts..."
+        @releases.find owner, repo, @_findAsset
+        .then (asset) =>
+            throw new Error 'not found' if not asset
+            log.info "This is the one", asset

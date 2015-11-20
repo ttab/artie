@@ -6,7 +6,7 @@ log      = require 'bog'
 module.exports = class Artifact
 
     constructor: (@opts, @cfg) ->
-    
+
     create: ->
         When.all([
             @cfg.fromGitVersion()
@@ -49,5 +49,3 @@ module.exports = class Artifact
                         tag     : git.tag
                         version : git.version
                         release : git.release
-                
-                
