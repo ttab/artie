@@ -1,3 +1,4 @@
+log  = require 'bog'
 When = require 'when'
 
 module.exports = class Artie
@@ -18,8 +19,12 @@ module.exports = class Artie
         When.all([
             @cfg.fromPackageJson()
             @artifact.create()
-        ]).spread (pkg, art) ->
-            return art
+        ]).spread (pkg, art) =>
+            { owner, repo } = @_parseRepository pkg
+            @releases.find owner, repo, (rel) -> rel.tag_name is art.tag
+            .then (rel) =>
+                log.info "Uploading #{art.name.yellow} to #{(owner + '/' + repo + '#' + art.tag).yellow}"
+                @releases.upload owner, repo, rel.id, art.name, art.path
 
     download: ->
-        Q()
+        When()

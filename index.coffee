@@ -25,17 +25,16 @@ artie = ->
     cfg      = new Cfg()
     artifact = new Artifact(program, cfg)
     releases = new Releases(program, github)
-    artie    = new Artie(program, artifact, releases)
+    artie    = new Artie(program, cfg, artifact, releases)
 
 program.command('upload')
     .description('Package this project as an executable and upload it to github.')
     .action () ->
         artie().upload()
-        .then (res) ->
-            log.info res
-            log.info 'done'
+        .then ->
+            log.info 'Done.'
         .catch (err) ->
-            log.error 'Error', err.red
+            log.error err.stack.red
         .done()
 
 program.command('download <owner> <repo>')
@@ -43,9 +42,9 @@ program.command('download <owner> <repo>')
     .action (owner, repo) ->
         artie().download(owner, repo)
         .then ->
-            log.info 'done'
+            log.info 'Done.'
         .catch (err) ->
-            log.error 'Error', err.red
+            log.error err.stack.red
         .done()
 
 program.parse(process.argv)
