@@ -47,6 +47,7 @@ module.exports = class Releases
                 .on 'error', (err) -> reject new Error err
                 .on 'response', (res) ->
                     if res.statusCode is 304
+                        log.info 'Local artifact newer than remote.'
                         resolve false
                     else
                         log.info 'Downloading...'
