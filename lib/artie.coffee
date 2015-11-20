@@ -44,4 +44,7 @@ module.exports = class Artie
         @releases.find owner, repo, @_findAsset
         .then (asset) =>
             throw new Error 'not found' if not asset
-            log.info "This is the one", asset
+            log.info "Found", asset.name.yellow
+            @releases.download asset.url, asset.name
+            .then (updated) ->
+                console.log 'updated:', updated

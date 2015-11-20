@@ -14,14 +14,14 @@ program.version(require('./package').version)
     .option('-o, --os <os>', 'Platform [linux]', 'linux')
     .option('-a, --arch <arch>', 'Processor architecture [x64]', 'x64')
     .option('-r, --only-releases', 'Only fetch production ready releases')
-    .option('-t, --token <oAuth token>', 'OAuth token')
+    .option('-t, --token <oAuth token>', 'OAuth token', process.env.GITHUB_OAUTH_TOKEN)
     .option('-v, --verbose')
 
 artie = ->
     github = new GitHubApi version: '3.0.0'
     github.authenticate
         type: 'oauth',
-        token: program.token or process.env.GITHUB_OAUTH_TOKEN or throw 'OAuth token needed'
+        token: program.token or throw 'OAuth token needed'
     cfg      = new Cfg()
     artifact = new Artifact(program, cfg)
     releases = new Releases(program, github)

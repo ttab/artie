@@ -21,6 +21,7 @@
     "github": "^0.2.4",
     "nar": "^0.3.21",
     "proxyquire": "^1.7.3",
+    "request": "^2.67.0",
     "when": "^3.7.4"
   },
   "devDependencies": {
