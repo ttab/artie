@@ -29,21 +29,21 @@ describe 'Artie', ->
             artie._parseRepository
                 repository:
                     type: 'git'
-                    url: 'https://github.com/ttab/artie'
+                    url: 'https://github.com/ttab/my-project'
             .should.eql
                 owner: 'ttab'
-                repo: 'artie'
+                repo: 'my-project'
 
         it 'returns the owner and repo name for a short url', ->
             artie._parseRepository
-                repository: 'github:ttab/artie'
+                repository: 'github:ttab/my-project'
             .should.eql
                 owner: 'ttab'
-                repo: 'artie'
+                repo: 'my-project'
 
         it 'returns the owner and repo name for a short short url', ->
             artie._parseRepository
-                repository: 'ttab/artie'
+                repository: 'ttab/my-project'
             .should.eql
                 owner: 'ttab'
-                repo: 'artie'
+                repo: 'my-project'
