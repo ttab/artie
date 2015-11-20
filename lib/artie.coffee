@@ -1,5 +1,7 @@
-log  = require 'bog'
-When = require 'when'
+fs    = require 'fs'
+log   = require 'bog'
+When  = require 'when'
+ncall = require('when/node').call
 
 module.exports = class Artie
 
@@ -47,4 +49,15 @@ module.exports = class Artie
             log.info "Found", asset.name.yellow
             @releases.download asset.url, asset.name
             .then (updated) ->
-                console.log 'updated:', updated
+                if updated
+                    log.info "Updating permissions."
+                    ncall fs.chmod, asset.name, 0o755
+            .then ->
+                When.all([
+                    ncall fs.realpath, asset.name
+                    ncall(fs.realpath, repo).catch ((err) ->)
+                ]).spread (fullName, fullRepo) ->
+                    if fullName isnt fullRepo
+                        log.info "Updating symlink."
+                        ncall(fs.unlink, repo).catch ((err) ->)
+                        .then -> ncall fs.symlink, asset.name, repo
