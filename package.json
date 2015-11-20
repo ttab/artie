@@ -19,6 +19,7 @@
     "commander": "^2.9.0",
     "findup": "^0.1.5",
     "github": "^0.2.4",
+    "moment": "^2.10.6",
     "nar": "^0.3.21",
     "proxyquire": "^1.7.3",
     "request": "^2.67.0",

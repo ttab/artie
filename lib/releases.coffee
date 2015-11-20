@@ -1,5 +1,6 @@
 log     = require 'bog'
 fs      = require 'fs'
+moment  = require 'moment'
 request = require 'request'
 When    = require 'when'
 
@@ -34,20 +35,21 @@ module.exports = class Releases
 
     download: (url, name) ->
         When.promise (resolve, reject) =>
-            log.info 'Downloading...'
-            code = undefined
-            request.get
-                url: url
-                headers:
-                    'Authorization': "token #{@opts.token}"
-                    'Accept': "application/octet-stream"
-                    'User-Agent': 'artie'
-                    'If-Modified-Since': 'Fri, 20 Nov 2015 09:55:58 GMT'
-            .on 'error', (err) -> reject new Error err
-            .on 'response', (res) ->
-                if res.statusCode is 304
-                    resolve false
-                else
-                    res.pipe(fs.createWriteStream(name))
-                    .on 'error', (err) -> reject new Error err
-                    .on 'finish', -> resolve true
+            fs.stat name, (err, stats) =>
+                modified = if stats then moment(stats.mtime).utc().format('ddd, DD MMM YYYY HH:mm:ss ') + 'GMT'
+                request.get
+                    url: url
+                    headers:
+                        'Authorization': "token #{@opts.token}"
+                        'Accept': "application/octet-stream"
+                        'User-Agent': 'artie'
+                        'If-Modified-Since': modified
+                .on 'error', (err) -> reject new Error err
+                .on 'response', (res) ->
+                    if res.statusCode is 304
+                        resolve false
+                    else
+                        log.info 'Downloading...'
+                        res.pipe(fs.createWriteStream(name))
+                        .on 'error', (err) -> reject new Error err
+                        .on 'finish', -> resolve true
