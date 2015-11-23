@@ -67,8 +67,10 @@ describe 'Artie', ->
             artifact =
                 create: stub()
             releases =
-                find: stub()
+                find: stub().returns When undefined
                 upload: stub().returns When {}
+                createRelease: stub().returns When { id: 2 }
+                createDraft: stub().returns When { id: 3 }
             artie = new Artie opts, cfg, artifact, releases
 
         describe 'for production releases', ->
@@ -81,25 +83,76 @@ describe 'Artie', ->
                     name: 'myrepo-v2.0.0-bin-linux-x64.nar'
                     path: '/dir/myrepo-v2.0.0-bin-linux-x64.nar'
                     release: true
-                releases.find.withArgs('myowner', 'myrepo', match.func).returns When { id: 1, draft: false, prerelease: false, tag_name: 'v2.0.0' }
+                    branch: 'master'
 
             it 'it finds the corresponding tagged release', ->
+                releases.find.withArgs('myowner', 'myrepo', match.func).returns When
+                    id: 1, draft: false, prerelease: false, tag_name: 'v2.0.0'
                 artie.upload().then ->
                     fn = releases.find.firstCall.args[2]
                     expect(fn({ id: 1, draft: true, prerelease: false, tag_name: 'v2.0.0' })).to.be.undefined
                     expect(fn({ id: 1, draft: false, prerelease: true, tag_name: 'v2.0.0' })).to.be.undefined
-                    expect(fn({ id: 1, draft: false, prerelease: false, tag_name: 'v2.0.0' })).to.eql { id: 1, draft: false, prerelease: false, tag_name: 'v2.0.0' }
+                    expect(fn({ id: 1, draft: false, prerelease: false, tag_name: 'v2.0.0' })).to.eql
+                        id: 1, draft: false, prerelease: false, tag_name: 'v2.0.0'
 
-            it 'it finds the corresponding tagged release and uploads the artifact', ->
+            it 'creates a new release if necessary', ->
                 artie.upload().then ->
-                    releases.upload.should.have.been.calledWith 'myowner', 'myrepo', 1, 'myrepo-v2.0.0-bin-linux-x64.nar', '/dir/myrepo-v2.0.0-bin-linux-x64.nar'
+                    releases.createRelease.should.have.been.calledWith 'myowner', 'myrepo', 'v2.0.0'
+                    releases.upload.should.have.been.calledWith 'myowner', 'myrepo', 2
+
+            it 'uploads the artifact', ->
+                releases.find.withArgs('myowner', 'myrepo', match.func).returns When
+                    id: 1, draft: false, prerelease: false, tag_name: 'v2.0.0'
+                artie.upload().then ->
+                    releases.upload.should.have.been.calledWith 'myowner', 'myrepo', 1,
+                        'myrepo-v2.0.0-bin-linux-x64.nar', '/dir/myrepo-v2.0.0-bin-linux-x64.nar'
 
         describe 'for development releases', ->
+            beforeEach ->
+                artifact.create.returns When
+                    tag: undefined
+                    version: 'v2.3.0-1-g05fc9e7'
+                    os: 'linux'
+                    arch: 'x64'
+                    name: 'myrepo-v2.3.0-1-g05fc9e7-bin-linux-x64.nar'
+                    path: '/dir/myrepo-v2.3.0-1-g05fc9e7-bin-linux-x64.nar'
+                    release: false
+                    branch: 'master'
 
-            it 'it looks for a draft release for this branch'
+            it 'it looks for a draft release for this branch', ->
+                releases.find.withArgs('myowner', 'myrepo', match.func).returns When
+                    id: 1, draft: true, prerelease: false, tag_name: null, target_commitish: 'master'
+                artie.upload().then ->
+                    fn = releases.find.firstCall.args[2]
 
-            it 'creates a new draft release if necessary'
+                    expect(fn({ id: 1, draft: true, prerelease: false, tag_name: 'v2.0.0-abcdef', name: 'master', target_commitish: 'master' }))
+                    .to.eql id: 1, draft: true, prerelease: false, tag_name: 'v2.0.0-abcdef', name: 'master', target_commitish: 'master'
+
+                    expect(fn({ id: 1, draft: true, prerelease: false, tag_name: 'v2.0.0-abcdef', name: 'test test', target_commitish: 'master' }))
+                    .to.be.undefined
+
+                    expect(fn({ id: 1, draft: true, prerelease: false, tag_name: 'v2.0.0-abcdef', name: 'development', target_commitish: 'development' }))
+                    .to.be.undefined
+
+                    expect(fn({ id: 1, draft: false, prerelease: true, tag_name: 'v2.0.0-abcdef', name: 'master', target_commitish: 'master' }))
+                    .to.be.undefined
+
+                    expect(fn({ id: 1, draft: false, prerelease: false, tag_name:'v2.0.0-abcdef', name: 'master', target_commitish: 'master' }))
+                    .to.be.undefined
+
+            it 'creates a new draft release if necessary', ->
+                releases.find.withArgs('myowner', 'myrepo', match.func).returns When undefined
+                artie.upload().then ->
+                    releases.createDraft.should.have.been.calledWith 'myowner', 'myrepo', 'master'
+                    releases.upload.should.have.been.calledWith 'myowner', 'myrepo', 3
 
             it 'deletes the previous artifact for this os/arch if one already exists'
+                # releases.find.withArgs('myowner', 'myrepo', match.func).returns When
+                #     id: 1, draft: true, prerelease: false, tag_name: null, target_commitish: 'master'
 
-            it 'uploads the artifact'
+            it 'uploads the artifact', ->
+                releases.find.withArgs('myowner', 'myrepo', match.func).returns When
+                    id: 1, draft: true, prerelease: false, tag_name: null, target_commitish: 'master'
+                artie.upload().then ->
+                    releases.upload.should.have.been.calledWith 'myowner', 'myrepo', 1,
+                        'myrepo-v2.3.0-1-g05fc9e7-bin-linux-x64.nar', '/dir/myrepo-v2.3.0-1-g05fc9e7-bin-linux-x64.nar'

@@ -36,13 +36,35 @@ module.exports = class Artie
             @artifact.create()
         ]).spread (pkg, art) =>
             { owner, repo } = @_parseRepository pkg
-            @releases.find owner, repo, (rel) ->
-                if rel.draft is false and
-                    rel.prerelease is false and
-                    rel.tag_name is art.tag
-                then rel
-            .then (rel) =>
-                log.info "Uploading #{art.name.yellow} to #{(owner + '/' + repo + '#' + art.tag).yellow}"
+            (if art.release
+                @releases.find owner, repo, (rel) ->
+                    if rel.draft is false and
+                        rel.prerelease is false and
+                        rel.tag_name is art.tag
+                    then rel
+                .then (rel) =>
+                    if rel
+                        log.info "Found release", art.tag.yellow
+                        rel
+                    else
+                        log.info "Creating release", art.tag.yellow
+                        @releases.createRelease owner, repo, art.tag
+            else
+                @releases.find owner, repo, (rel) ->
+                    if rel.draft is true and
+                        rel.prerelease is false and
+                        rel.name is art.branch and
+                        rel.target_commitish is art.branch
+                    then rel
+                .then (rel) =>
+                    if rel
+                        log.info "Found draft", art.branch.yellow
+                        rel
+                    else
+                        log.info "Creating draft", art.branch.yellow
+                        @releases.createDraft owner, repo, art.branch
+            ).then (rel) =>
+                log.info "Uploading #{art.name.yellow} to #{(owner + '/' + repo + '#' + rel.name).yellow}"
                 @releases.upload owner, repo, rel.id, art.name, art.path
 
     download: (owner, repo) ->
