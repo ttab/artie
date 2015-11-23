@@ -17,7 +17,7 @@ module.exports = class Artifact
             os     = @opts.os
             arch   = @opts.arch
             node   = @opts.node or nvmrc
-            name   = "#{pkg.name}-#{git.tag}-bin"
+            name   = "#{pkg.name}-#{git.version}-bin"
             log.info 'Building', name.yellow
             When.promise (resolve, reject) =>
                 nar.createExec

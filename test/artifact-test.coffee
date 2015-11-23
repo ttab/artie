@@ -5,7 +5,7 @@ When         = require 'when'
 describe 'Artifact', ->
 
     describe '.create()', ->
-        Artifact = artifact = opts = cfg = nar = emitter = undefined
+        Artifact = artifact = path = opts = cfg = nar = emitter = undefined
         beforeEach ->
             emitter = new EventEmitter()
             nar =
@@ -17,7 +17,8 @@ describe 'Artifact', ->
                 fromPackageJson: stub().returns When { name: 'myproject', version: '1.0.0' }
                 fromNvmrc: stub().returns When '0.12.7'
             artifact = new Artifact opts, cfg
-            setTimeout (-> emitter.emit 'end', '/my/dir/myproject-v1.0.0-bin-myos-myarch.nar'), 10
+            path = '/my/dir/myproject-v1.0.0-bin-myos-myarch.nar'
+            setTimeout (-> emitter.emit 'end', path), 10
 
         it 'should call nar.createExec()', ->
             artifact.create().then ->
@@ -44,7 +45,7 @@ describe 'Artifact', ->
                 nar.createExec.should.have.been.calledWith match
                     node: undefined
 
-        it 'should return an object describing the created artifact', ->
+        it 'returns an object describing a release artifact', ->
             artifact.create().then (res) ->
                 res.should.have.property 'binary', true
                 res.should.have.property 'os', 'myos'
@@ -54,3 +55,16 @@ describe 'Artifact', ->
                 res.should.have.property 'tag', 'v1.0.0'
                 res.should.have.property 'version', 'v1.0.0'
                 res.should.have.property 'release', true
+
+        it 'returns an object describing a development artifact', ->
+            path = '/my/dir/myproject-v2.3.0-1-g05fc9e7-bin-myos-myarch.nar'
+            cfg.fromGitVersion.returns When { tag: undefined, version: 'v2.3.0-1-g05fc9e7', release: false }
+            artifact.create().then (res) ->
+                res.should.have.property 'binary', true
+                res.should.have.property 'os', 'myos'
+                res.should.have.property 'arch', 'myarch'
+                res.should.have.property 'name', 'myproject-v2.3.0-1-g05fc9e7-bin-myos-myarch.nar'
+                res.should.have.property 'path', '/my/dir/myproject-v2.3.0-1-g05fc9e7-bin-myos-myarch.nar'
+                res.should.have.property 'tag', undefined
+                res.should.have.property 'version', 'v2.3.0-1-g05fc9e7'
+                res.should.have.property 'release', false
