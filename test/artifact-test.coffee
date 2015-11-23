@@ -13,7 +13,7 @@ describe 'Artifact', ->
             Artifact = proxyquire '../lib/artifact', { 'nar': nar }
             opts = { os: 'myos', arch: 'myarch' }
             cfg =
-                fromGitVersion: stub().returns When { tag: 'v1.0.0', version: 'v1.0.0', release: true }
+                fromGitVersion: stub().returns When { tag: 'v1.0.0', version: 'v1.0.0', release: true, branch: 'master' }
                 fromPackageJson: stub().returns When { name: 'myproject', version: '1.0.0' }
                 fromNvmrc: stub().returns When '0.12.7'
             artifact = new Artifact opts, cfg
@@ -55,10 +55,11 @@ describe 'Artifact', ->
                 res.should.have.property 'tag', 'v1.0.0'
                 res.should.have.property 'version', 'v1.0.0'
                 res.should.have.property 'release', true
+                res.should.have.property 'branch', 'master'
 
         it 'returns an object describing a development artifact', ->
             path = '/my/dir/myproject-v2.3.0-1-g05fc9e7-bin-myos-myarch.nar'
-            cfg.fromGitVersion.returns When { tag: undefined, version: 'v2.3.0-1-g05fc9e7', release: false }
+            cfg.fromGitVersion.returns When { tag: undefined, version: 'v2.3.0-1-g05fc9e7', release: false, branch: 'master' }
             artifact.create().then (res) ->
                 res.should.have.property 'binary', true
                 res.should.have.property 'os', 'myos'
@@ -68,3 +69,4 @@ describe 'Artifact', ->
                 res.should.have.property 'tag', undefined
                 res.should.have.property 'version', 'v2.3.0-1-g05fc9e7'
                 res.should.have.property 'release', false
+                res.should.have.property 'branch', 'master'

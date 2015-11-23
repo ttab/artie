@@ -49,3 +49,4 @@ module.exports = class Artifact
                         tag     : git.tag
                         version : git.version
                         release : git.release
+                        branch  : git.branch
