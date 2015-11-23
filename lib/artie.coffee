@@ -53,19 +53,29 @@ module.exports = class Artie
                 @releases.find owner, repo, (rel) ->
                     if rel.draft is true and
                         rel.prerelease is false and
-                        rel.name is art.branch and
+                        rel.name is art.version and
                         rel.target_commitish is art.branch
                     then rel
                 .then (rel) =>
                     if rel
-                        log.info "Found draft", art.branch.yellow
+                        log.info "Found draft", art.version.yellow
                         rel
                     else
-                        log.info "Creating draft", art.branch.yellow
-                        @releases.createDraft owner, repo, art.branch
+                        log.info "Creating draft", art.version.yellow
+                        @releases.createDraft owner, repo, art.branch, art.version
             ).then (rel) =>
                 log.info "Uploading #{art.name.yellow} to #{(owner + '/' + repo + '#' + rel.name).yellow}"
                 @releases.upload owner, repo, rel.id, art.name, art.path
+            .then (rel) =>
+                @releases.findAll owner, repo, (rel) ->
+                    return rel.draft is true and
+                        rel.name isnt art.version and
+                        rel.target_commitish is art.branch
+                .then (drafts) =>
+                    log.info "Deleting old drafts..."
+                    When.all (@releases.deleteRelease owner, repo, draft.id for draft in drafts)
+                .then ->
+                    rel
 
     download: (owner, repo) ->
         log.info "Looking for #{@opts.os.yellow}/#{@opts.arch.yellow} artifacts..."

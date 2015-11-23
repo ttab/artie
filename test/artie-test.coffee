@@ -68,9 +68,11 @@ describe 'Artie', ->
                 create: stub()
             releases =
                 find: stub().returns When undefined
+                findAll: stub().returns When [ ]
                 upload: stub().returns When {}
                 createRelease: stub().returns When { id: 2 }
                 createDraft: stub().returns When { id: 3 }
+                deleteRelease: stub().returns When {}
             artie = new Artie opts, cfg, artifact, releases
 
         describe 'for production releases', ->
@@ -146,13 +148,23 @@ describe 'Artie', ->
                     releases.createDraft.should.have.been.calledWith 'myowner', 'myrepo', 'master'
                     releases.upload.should.have.been.calledWith 'myowner', 'myrepo', 3
 
-            it 'deletes the previous artifact for this os/arch if one already exists'
-                # releases.find.withArgs('myowner', 'myrepo', match.func).returns When
-                #     id: 1, draft: true, prerelease: false, tag_name: null, target_commitish: 'master'
-
             it 'uploads the artifact', ->
                 releases.find.withArgs('myowner', 'myrepo', match.func).returns When
                     id: 1, draft: true, prerelease: false, tag_name: null, target_commitish: 'master'
                 artie.upload().then ->
                     releases.upload.should.have.been.calledWith 'myowner', 'myrepo', 1,
                         'myrepo-v2.3.0-1-g05fc9e7-bin-linux-x64.nar', '/dir/myrepo-v2.3.0-1-g05fc9e7-bin-linux-x64.nar'
+
+            it 'deletes previous draft releases for this branch', ->
+                releases.find.withArgs('myowner', 'myrepo', match.func).returns When
+                    id: 1, draft: true, prerelease: false, tag_name: null, target_commitish: 'master'
+                releases.findAll.returns When [ { id: 1 }, { id: 2 } ]
+                artie.upload().then ->
+                    fn = releases.findAll.firstCall.args[2]
+                    expect(fn { draft: true, tag_name:'v2.3.0-1-g05fc9e7', name: 'v2.3.0-1-g05fc9e7', target_commitish: 'master'}).to.equal false
+                    expect(fn { draft: true, tag_name:'v2.0.6-5-g7ebe6bc', name: 'v2.0.6-5-g7ebe6bc', target_commitish: 'master'}).to.equal true
+                    expect(fn { draft: false, tag_name:'v2.0.6-5-g7ebe6bc', name: 'v2.0.6-5-g7ebe6bc', target_commitish: 'master'}).to.equal false
+                    expect(fn { draft: true, tag_name:'v2.0.6-5-g7ebe6bc', name: 'v2.0.6-5-g7ebe6bc', target_commitish: 'development'}).to.equal false
+
+                    releases.deleteRelease.should.have.been.calledWith 'myowner', 'myrepo', 1
+                    releases.deleteRelease.should.have.been.calledWith 'myowner', 'myrepo', 2
