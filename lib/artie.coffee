@@ -36,7 +36,11 @@ module.exports = class Artie
             @artifact.create()
         ]).spread (pkg, art) =>
             { owner, repo } = @_parseRepository pkg
-            @releases.find owner, repo, (rel) -> if rel.tag_name is art.tag then rel
+            @releases.find owner, repo, (rel) ->
+                if rel.draft is false and
+                    rel.prerelease is false and
+                    rel.tag_name is art.tag
+                then rel
             .then (rel) =>
                 log.info "Uploading #{art.name.yellow} to #{(owner + '/' + repo + '#' + art.tag).yellow}"
                 @releases.upload owner, repo, rel.id, art.name, art.path

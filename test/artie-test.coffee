@@ -1,4 +1,5 @@
 Artie = require '../lib/artie'
+When  = require 'when'
 
 describe 'Artie', ->
 
@@ -55,3 +56,50 @@ describe 'Artie', ->
             .should.eql
                 owner: 'ttab'
                 repo: 'my-project'
+
+    describe '.upload()', ->
+        opts = cfg = artifact = releases = undefined
+        beforeEach ->
+            opts = {}
+            cfg =
+                fromPackageJson: stub().returns When
+                    repository: 'github:myowner/myrepo'
+            artifact =
+                create: stub()
+            releases =
+                find: stub()
+                upload: stub().returns When {}
+            artie = new Artie opts, cfg, artifact, releases
+
+        describe 'for production releases', ->
+            beforeEach ->
+                artifact.create.returns When
+                    tag: 'v2.0.0'
+                    version: 'v2.0.0'
+                    os: 'linux'
+                    arch: 'x64'
+                    name: 'myrepo-v2.0.0-bin-linux-x64.nar'
+                    path: '/dir/myrepo-v2.0.0-bin-linux-x64.nar'
+                    release: true
+                releases.find.withArgs('myowner', 'myrepo', match.func).returns When { id: 1, draft: false, prerelease: false, tag_name: 'v2.0.0' }
+
+            it 'it finds the corresponding tagged release', ->
+                artie.upload().then ->
+                    fn = releases.find.firstCall.args[2]
+                    expect(fn({ id: 1, draft: true, prerelease: false, tag_name: 'v2.0.0' })).to.be.undefined
+                    expect(fn({ id: 1, draft: false, prerelease: true, tag_name: 'v2.0.0' })).to.be.undefined
+                    expect(fn({ id: 1, draft: false, prerelease: false, tag_name: 'v2.0.0' })).to.eql { id: 1, draft: false, prerelease: false, tag_name: 'v2.0.0' }
+
+            it 'it finds the corresponding tagged release and uploads the artifact', ->
+                artie.upload().then ->
+                    releases.upload.should.have.been.calledWith 'myowner', 'myrepo', 1, 'myrepo-v2.0.0-bin-linux-x64.nar', '/dir/myrepo-v2.0.0-bin-linux-x64.nar'
+
+        describe 'for development releases', ->
+
+            it 'it looks for a draft release for this branch'
+
+            it 'creates a new draft release if necessary'
+
+            it 'deletes the previous artifact for this os/arch if one already exists'
+
+            it 'uploads the artifact'
