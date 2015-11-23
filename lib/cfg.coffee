@@ -1,7 +1,7 @@
 fs     = require 'fs'
 findup = require 'findup'
 When   = require 'when'
-nodefn = require 'when/node'
+ncall  = require('when/node').call
 exec   = require('child_process').exec
 
 module.exports = class Cfg
@@ -26,17 +26,17 @@ module.exports = class Cfg
 
     fromGitVersion: ->
         return @git if @git
-        nodefn.call(exec, 'git rev-parse --abbrev-ref HEAD').then (branch) ->
+        ncall(exec, 'git rev-parse --abbrev-ref HEAD').then (branch) ->
             branch = branch[0].trim()
-            @git = nodefn.call(exec, 'git describe --exact-match')
+            @git = ncall(exec, 'git describe --exact-match')
             .then (version) ->
                 version = version[0].trim()
-                return { branch, tag: version, version: version, release: true }
+                return { branch, tag: version, version, release: true }
             .catch (err) ->
-                nodefn.call(exec, 'git describe --always --tag')
+                ncall(exec, 'git describe --always --tag')
                 .then (version) ->
                     version = version[0].trim()
-                    return { branch, tag: undefined, version: version, release: false }
+                    return { branch, tag: undefined, version, release: false }
         .catch (err) ->
             throw new Error 'could not extract GIT version'
 
