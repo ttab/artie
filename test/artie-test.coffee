@@ -125,19 +125,19 @@ describe 'Artie', ->
                 artie.upload().then ->
                     fn = releases.find.firstCall.args[2]
 
-                    expect(fn({ id: 1, draft: true, prerelease: false, tag_name: 'v2.0.0-abcdef', name: 'master', target_commitish: 'master' }))
-                    .to.eql id: 1, draft: true, prerelease: false, tag_name: 'v2.0.0-abcdef', name: 'master', target_commitish: 'master'
+                    expect(fn({ id: 1, draft: true, prerelease: false, tag_name: 'v2.3.0-1-g05fc9e7', name: 'v2.3.0-1-g05fc9e7', target_commitish: 'master' }))
+                    .to.eql id: 1, draft: true, prerelease: false, tag_name: 'v2.3.0-1-g05fc9e7', name: 'v2.3.0-1-g05fc9e7', target_commitish: 'master'
 
-                    expect(fn({ id: 1, draft: true, prerelease: false, tag_name: 'v2.0.0-abcdef', name: 'test test', target_commitish: 'master' }))
+                    expect(fn({ id: 1, draft: true, prerelease: false, tag_name: 'v2.3.0-1-g05fc9e7', name: 'v2.3.0-1-g05fc9e7', target_commitish: 'development' }))
                     .to.be.undefined
 
-                    expect(fn({ id: 1, draft: true, prerelease: false, tag_name: 'v2.0.0-abcdef', name: 'development', target_commitish: 'development' }))
+                    expect(fn({ id: 1, draft: true, prerelease: false, tag_name: 'v2.3.0-1-g05fc9e7', name: 'development', target_commitish: 'master' }))
                     .to.be.undefined
 
-                    expect(fn({ id: 1, draft: false, prerelease: true, tag_name: 'v2.0.0-abcdef', name: 'master', target_commitish: 'master' }))
+                    expect(fn({ id: 1, draft: false, prerelease: true, tag_name: 'v2.3.0-1-g05fc9e7', name: 'v2.3.0-1-g05fc9e7', target_commitish: 'master' }))
                     .to.be.undefined
 
-                    expect(fn({ id: 1, draft: false, prerelease: false, tag_name:'v2.0.0-abcdef', name: 'master', target_commitish: 'master' }))
+                    expect(fn({ id: 1, draft: false, prerelease: false, tag_name:'v2.3.0-1-g05fc9e7', name: 'v2.3.0-1-g05fc9e7', target_commitish: 'master' }))
                     .to.be.undefined
 
             it 'creates a new draft release if necessary', ->

@@ -29,8 +29,8 @@ module.exports = class Releases
     createRelease: (owner, repo, tag_name) ->
         ncall @client.releases.createRelease, { owner, repo, tag_name }
 
-    createDraft: (owner, repo, branch) ->
-        ncall @client.releases.createRelease, { owner, repo, tag_name: branch, draft: true, name: branch, body: "This is an automatically created draft which holds release artifacts for the #{branch} branch." }
+    createDraft: (owner, repo, branch, version) ->
+        ncall @client.releases.createRelease, { owner, repo, tag_name: branch, draft: true, name: version, body: "This is an automatically created draft which holds release artifacts for the #{branch} branch." }
 
     upload: (owner, repo, id, name, filePath) ->
         ncall @client.releases.uploadAsset, { owner, repo, id, name, filePath }
