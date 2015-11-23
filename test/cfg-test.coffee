@@ -16,6 +16,7 @@ describe 'Cfg', ->
         beforeEach ->
             nodefn =
                 call: stub().returns When()
+            nodefn.call.withArgs(match.func, 'git rev-parse --abbrev-ref HEAD').returns When ['master\n']
             Cfg = proxyquire '../lib/cfg', { 'when/node': nodefn }
             cfg = new Cfg()
 
@@ -28,20 +29,26 @@ describe 'Cfg', ->
             cfg.fromGitVersion().should.eventually.eql
                 tag: 'v2.0.0'
                 version: 'v2.0.0'
+                branch: 'master'
                 release: true
 
         it 'knows when we are on a development commit', ->
             nodefn.call.withArgs(match.func, 'git describe --exact-match').returns When.reject([])
             nodefn.call.withArgs(match.func, 'git describe --always --tag').returns When ['v2.3.0-1-g05fc9e7\n']
             cfg.fromGitVersion().should.eventually.eql
-                tag: 'v2.3.0'
+                tag: undefined
                 version: 'v2.3.0-1-g05fc9e7'
+                branch: 'master'
                 release: false
 
-        it 'objects to bogus tags', ->
+        it 'knows when we are on a commit that has not been tagged', ->
             nodefn.call.withArgs(match.func, 'git describe --exact-match').returns When.reject([])
-            nodefn.call.withArgs(match.func, 'git describe --always --tag').returns When ['teleledningsanka\n']
-            cfg.fromGitVersion().should.eventually.be.rejected
+            nodefn.call.withArgs(match.func, 'git describe --always --tag').returns When ['c73594a\n']
+            cfg.fromGitVersion().should.eventually.eql
+                tag: undefined
+                version: 'c73594a'
+                branch: 'master'
+                release: false
 
     describe '.fromPackageJson()', ->
 
