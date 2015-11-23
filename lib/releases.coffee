@@ -3,6 +3,7 @@ fs      = require 'fs'
 moment  = require 'moment'
 request = require 'request'
 When    = require 'when'
+ncall   = require('when/node').call
 
 module.exports = class Releases
 
@@ -26,12 +27,7 @@ module.exports = class Releases
             scroll 0
 
     upload: (owner, repo, id, name, filePath) ->
-        When.promise (resolve, reject) =>
-            @client.releases.uploadAsset { owner, repo, id, name, filePath }, (err, res) =>
-                if err
-                    reject new Error err.message
-                else
-                    resolve()
+        ncall @client.releases.uploadAsset, { owner, repo, id, name, filePath }
 
     download: (url, name) ->
         When.promise (resolve, reject) =>
