@@ -13,7 +13,7 @@ program.version(require('./package').version)
     .option('-n, --node [version]')
     .option('-o, --os <os>', 'Platform [linux]', 'linux')
     .option('-a, --arch <arch>', 'Processor architecture [x64]', 'x64')
-    .option('-r, --only-releases', 'Only fetch production ready releases')
+    .option('-p, --production', 'Only download production ready releases')
     .option('-t, --token <oAuth token>', 'OAuth token', process.env.GITHUB_OAUTH_TOKEN)
     .option('-v, --verbose')
 

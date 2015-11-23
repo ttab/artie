@@ -1,10 +1,11 @@
-Artie = require '../lib/artie'
-When  = require 'when'
+When       = require 'when'
+proxyquire = require 'proxyquire'
 
 describe 'Artie', ->
 
     artie = undefined
     beforeEach ->
+        Artie = require '../lib/artie'
         artie = new Artie
 
     describe '.parseAsset()', ->
@@ -60,6 +61,7 @@ describe 'Artie', ->
     describe '.upload()', ->
         opts = cfg = artifact = releases = undefined
         beforeEach ->
+            Artie = require '../lib/artie'
             opts = {}
             cfg =
                 fromPackageJson: stub().returns When
@@ -168,3 +170,37 @@ describe 'Artie', ->
 
                     releases.deleteRelease.should.have.been.calledWith 'myowner', 'myrepo', 1
                     releases.deleteRelease.should.have.been.calledWith 'myowner', 'myrepo', 2
+
+
+    describe '.download()', ->
+        Artie = artie = fs = opts = cfg = artifact = releases = undefined
+        beforeEach ->
+            fs =
+                realpath: (path, cb) -> cb undefined, path
+                symlink: (src, dest, cb) -> cb undefined, undefined
+                unlink: (path, cb) -> cb undefined
+            Artie = proxyquire '../lib/artie', { 'fs', fs }
+            opts = { os: 'linux', arch: 'x64', production: false }
+            cfg = {}
+            artifact = {}
+            releases =
+                find: stub().returns When { name: 'v2.0.6-5-g7ebe6bc', draft: true }
+                download: stub().returns When false
+            artie = new Artie opts, cfg, artifact, releases
+
+        it 'looks for the latest non-pre release', ->
+            artie.download().then ->
+                fn = releases.find.firstCall.args[2]
+                expect(fn { draft: true, prerelease: false, assets: [{ name: 'myrepo-v2.0.6-5-g7ebe6bc-bin-linux-x64.nar' }]}).to.not.be.undefined
+                expect(fn { draft: false, prerelease: false, assets: [{ name: 'myrepo-v2.0.6-5-g7ebe6bc-bin-linux-x64.nar' }]}).to.not.be.undefined
+                expect(fn { draft: true, prerelease: false, assets: [{ name: 'myrepo-v2.0.6-5-g7ebe6bc-bin-darwin-x64.nar' }]}).to.be.undefined
+                expect(fn { draft: true, prerelease: true, assets: [{ name: 'myrepo-v2.0.6-5-g7ebe6bc-bin-linux-x64.nar' }]}).to.be.undefined
+
+        it 'only looks for production releases if run with -p', ->
+            opts.production = true
+            artie.download().then ->
+                fn = releases.find.firstCall.args[2]
+                expect(fn { draft: true, prerelease: false, assets: [{ name: 'myrepo-v2.0.6-5-g7ebe6bc-bin-linux-x64.nar' }]}).to.be.undefined
+                expect(fn { draft: false, prerelease: false, assets: [{ name: 'myrepo-v2.0.6-5-g7ebe6bc-bin-linux-x64.nar' }]}).to.not.be.undefined
+                expect(fn { draft: false, prerelease: false, assets: [{ name: 'myrepo-v2.0.6-5-g7ebe6bc-bin-darwin-x64.nar' }]}).to.be.undefined
+                expect(fn { draft: false, prerelease: true, assets: [{ name: 'myrepo-v2.0.6-5-g7ebe6bc-bin-linux-x64.nar' }]}).to.be.undefined

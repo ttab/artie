@@ -25,6 +25,8 @@ module.exports = class Artie
             undefined
 
     _findAsset: (rel) =>
+        return undefined if rel.prerelease is true
+        return undefined if @opts.production is true and rel.draft is true
         assets = rel.assets.filter (asset) =>
             if parsed = @_parseAsset asset.name
                 return parsed.os == @opts.os and parsed.arch == @opts.arch
@@ -78,7 +80,7 @@ module.exports = class Artie
                     rel
 
     download: (owner, repo) ->
-        log.info "Looking for #{@opts.os.yellow}/#{@opts.arch.yellow} artifacts..."
+        log.info "Looking for #{if @opts.production then 'production ' else ''}#{@opts.os.yellow}/#{@opts.arch.yellow} artifacts..."
         @releases.find owner, repo, @_findAsset
         .then (asset) =>
             throw new Error 'not found' if not asset
