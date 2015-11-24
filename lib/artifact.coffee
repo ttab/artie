@@ -25,7 +25,6 @@ module.exports = class Artifact
                     os              : os
                     arch            : arch
                     node            : node
-                    devDependencies : false
                     file            : name
                 .on 'error', (err) ->
                     reject err
