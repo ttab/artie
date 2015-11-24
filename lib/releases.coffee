@@ -4,6 +4,7 @@ moment  = require 'moment'
 request = require 'request'
 When    = require 'when'
 ncall   = require('when/node').call
+tmp     = require 'tmp'
 
 module.exports = class Releases
 
@@ -44,8 +45,11 @@ module.exports = class Releases
         ncall @client.releases.uploadAsset, { owner, repo, id, name, filePath }
 
     download: (url, name) ->
-        When.promise (resolve, reject) =>
-            fs.stat name, (err, stats) =>
+        When.all([
+            ncall(fs.stat, name).catch(->)
+            ncall tmp.file
+        ]).spread (stats, [tmpPath, tmpFd]) =>
+            When.promise (resolve, reject) =>
                 modified = if stats then moment(stats.mtime).utc().format('ddd, DD MMM YYYY HH:mm:ss ') + 'GMT'
                 request.get
                     url: url
@@ -57,10 +61,13 @@ module.exports = class Releases
                 .on 'error', (err) -> reject new Error err
                 .on 'response', (res) ->
                     if res.statusCode is 304
-                        log.info 'Local artifact newer than remote.'
+                        log.info 'Nothing to do here; local artifact newer than remote.'
                         resolve false
                     else
                         log.info 'Downloading...'
-                        res.pipe(fs.createWriteStream(name))
-                        .on 'error', (err) -> reject new Error err
-                        .on 'finish', -> resolve true
+                        When.promise (resolve, reject) ->
+                            res.pipe(fs.createWriteStream(undefined, { fd: tmpFd }))
+                            .on 'error', (err) -> reject new Error err
+                            .on 'finish', -> resolve()
+                        .then -> ncall fs.rename, tmpPath, name
+                        .then -> resolve true
