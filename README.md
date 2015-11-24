@@ -18,7 +18,7 @@ archive using [nar]. The archive layout can be
 If the current commit also has a tag, the package is uploaded and
 attached to the GitHub release with the same tag.
 
-If we are /not/ on a tag, we assume that this package is for
+If we are *not* on a tag, we assume that this package is for
 development purposes, and a new GitHub draft release is created using
 the abbreviated commit object as the name.
 
