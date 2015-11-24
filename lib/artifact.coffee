@@ -18,7 +18,7 @@ module.exports = class Artifact
             arch   = @opts.arch
             node   = @opts.node or nvmrc
             name   = "#{pkg.name}-#{git.version}-bin"
-            log.info 'Building', name.yellow
+            log.info 'Building', name
             When.promise (resolve, reject) =>
                 nar.createExec
                     binary          : binary
@@ -35,9 +35,9 @@ module.exports = class Artifact
                 .on 'generate', ->
                     log.info 'Generating executable...'
                 .on 'file', (file) ->
-                    log.debug 'Add [' + file.type.cyan + ']', file.name
+                    log.debug 'Add [' + file.type + ']', file.name
                 .on 'archive', (file) ->
-                    log.info 'Add [' + file.type.cyan + ']', file.name
+                    log.info 'Add [' + file.type + ']', file.name
                 .on 'end', (path) ->
                     resolve
                         binary  : binary

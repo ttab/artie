@@ -1,7 +1,6 @@
 #!/usr/bin/env coffee
 
 log       = require 'bog'
-colors    = require 'colors'
 program   = require 'commander'
 Artie     = require './lib/artie'
 Artifact  = require './lib/artifact'
@@ -34,7 +33,8 @@ program.command('upload')
         .then ->
             log.info 'Done.'
         .catch (err) ->
-            log.error err.stack?.red or err.toString().red
+            log.error err
+            log.error err.stack? or err.toString()
             process.exit 1
         .done()
 
@@ -45,7 +45,7 @@ program.command('download <owner> <repo>')
         .then ->
             log.info 'Done.'
         .catch (err) ->
-            log.error err.stack?.red or err.toString().red
+            log.error err.stack? or err.toString()
             process.exit 1
         .done()
 

@@ -46,10 +46,10 @@ module.exports = class Artie
                     then rel
                 .then (rel) =>
                     if rel
-                        log.info "Found release", art.tag.yellow
+                        log.info "Found release", art.tag
                         rel
                     else
-                        log.info "Creating release", art.tag.yellow
+                        log.info "Creating release", art.tag
                         @releases.createRelease owner, repo, art.tag
             else
                 @releases.find owner, repo, (rel) ->
@@ -60,13 +60,13 @@ module.exports = class Artie
                     then rel
                 .then (rel) =>
                     if rel
-                        log.info "Found draft", art.version.yellow
+                        log.info "Found draft", art.version
                         rel
                     else
-                        log.info "Creating draft", art.version.yellow
+                        log.info "Creating draft", art.version
                         @releases.createDraft owner, repo, art.branch, art.version
             ).then (rel) =>
-                log.info "Uploading #{art.name.yellow} to #{(owner + '/' + repo + '#' + rel.name).yellow}"
+                log.info "Uploading #{art.name} to #{(owner + '/' + repo + '#' + rel.name)}"
                 @releases.upload owner, repo, rel.id, art.name, art.path
             .then (rel) =>
                 @releases.findAll owner, repo, (rel) ->
@@ -80,11 +80,11 @@ module.exports = class Artie
                     rel
 
     download: (owner, repo) ->
-        log.info "Looking for #{if @opts.production then 'production ' else ''}#{@opts.os.yellow}/#{@opts.arch.yellow} artifacts..."
+        log.info "Looking for #{if @opts.production then 'production ' else ''}#{@opts.os}/#{@opts.arch} artifacts..."
         @releases.find owner, repo, @_findAsset
         .then (asset) =>
             throw new Error 'not found' if not asset
-            log.info "Found", asset.name.yellow
+            log.info "Found", asset.name
             @releases.download asset.url, asset.name
             .then (updated) ->
                 if updated
