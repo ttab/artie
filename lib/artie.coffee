@@ -73,7 +73,7 @@ module.exports = class Artie
                         rel.body.match(/^This is an automatically created draft/) and
                         rel.name isnt art.version
                 .then (drafts) =>
-                    log.info "Deleting old drafts...", drafts
+                    log.info "Deleting old drafts..."
                     When.all (@releases.deleteRelease owner, repo, draft.id for draft in drafts)
                 .then ->
                     rel
