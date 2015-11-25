@@ -48,7 +48,7 @@ describe 'Artie', ->
             artie._parseRepository
                 repository:
                     type: 'git'
-                    url: 'https://github.com/ttab/my-project.git'
+                    url: 'https://github.com/ttab/my-project'
             .should.eql
                 owner: 'ttab'
                 repo: 'my-project'
@@ -141,9 +141,6 @@ describe 'Artie', ->
                     expect(fn({ id: 1, draft: true, prerelease: false, tag_name: 'v2.3.0-1-g05fc9e7', name: 'v2.3.0-1-g05fc9e7', target_commitish: 'master' }))
                     .to.eql id: 1, draft: true, prerelease: false, tag_name: 'v2.3.0-1-g05fc9e7', name: 'v2.3.0-1-g05fc9e7', target_commitish: 'master'
 
-                    expect(fn({ id: 1, draft: true, prerelease: false, tag_name: 'v2.3.0-1-g05fc9e7', name: 'v2.3.0-1-g05fc9e7', target_commitish: 'development' }))
-                    .to.be.undefined
-
                     expect(fn({ id: 1, draft: true, prerelease: false, tag_name: 'v2.3.0-1-g05fc9e7', name: 'development', target_commitish: 'master' }))
                     .to.be.undefined
 
@@ -156,7 +153,7 @@ describe 'Artie', ->
             it 'creates a new draft release if necessary', ->
                 releases.find.withArgs('myowner', 'myrepo', match.func).returns When undefined
                 artie.upload().then ->
-                    releases.createDraft.should.have.been.calledWith 'myowner', 'myrepo', 'master'
+                    releases.createDraft.should.have.been.calledWith 'myowner', 'myrepo', 'master', 'v2.3.0-1-g05fc9e7'
                     releases.upload.should.have.been.calledWith 'myowner', 'myrepo', 3
 
             it 'uploads the artifact', ->
@@ -172,10 +169,10 @@ describe 'Artie', ->
                 releases.findAll.returns When [ { id: 1 }, { id: 2 } ]
                 artie.upload().then ->
                     fn = releases.findAll.firstCall.args[2]
-                    expect(fn { draft: true, tag_name:'v2.3.0-1-g05fc9e7', name: 'v2.3.0-1-g05fc9e7', target_commitish: 'master'}).to.equal false
-                    expect(fn { draft: true, tag_name:'v2.0.6-5-g7ebe6bc', name: 'v2.0.6-5-g7ebe6bc', target_commitish: 'master'}).to.equal true
-                    expect(fn { draft: false, tag_name:'v2.0.6-5-g7ebe6bc', name: 'v2.0.6-5-g7ebe6bc', target_commitish: 'master'}).to.equal false
-                    expect(fn { draft: true, tag_name:'v2.0.6-5-g7ebe6bc', name: 'v2.0.6-5-g7ebe6bc', target_commitish: 'development'}).to.equal false
+                    expect(fn { draft: true, name: 'v2.3.0-1-g05fc9e7', body: 'This is an automatically created draft'}).to.not.be.ok
+                    expect(fn { draft: true, name: 'v2.0.6-5-g7ebe6bc', body: 'This is an automatically created draft'}).to.be.ok
+                    expect(fn { draft: false, name: 'v2.0.6-5-g7ebe6bc', body:'This is an automatically created draft'}).to.not.be.ok
+                    expect(fn { draft: true, name: 'v2.0.6-5-g7ebe6bc', body: 'Dont delete be bro!'}).to.not.be.ok
 
                     releases.deleteRelease.should.have.been.calledWith 'myowner', 'myrepo', 1
                     releases.deleteRelease.should.have.been.calledWith 'myowner', 'myrepo', 2

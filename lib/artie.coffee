@@ -55,8 +55,7 @@ module.exports = class Artie
                 @releases.find owner, repo, (rel) ->
                     if rel.draft is true and
                         rel.prerelease is false and
-                        rel.name is art.version and
-                        rel.target_commitish is art.branch
+                        rel.name is art.version
                     then rel
                 .then (rel) =>
                     if rel
@@ -71,10 +70,10 @@ module.exports = class Artie
             .then (rel) =>
                 @releases.findAll owner, repo, (rel) ->
                     return rel.draft is true and
-                        rel.name isnt art.version and
-                        rel.target_commitish is art.branch
+                        rel.body.match(/^This is an automatically created draft/) and
+                        rel.name isnt art.version
                 .then (drafts) =>
-                    log.info "Deleting old drafts..."
+                    log.info "Deleting old drafts...", drafts
                     When.all (@releases.deleteRelease owner, repo, draft.id for draft in drafts)
                 .then ->
                     rel

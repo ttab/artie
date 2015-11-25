@@ -20,7 +20,7 @@ module.exports = class Releases
                     return matches[0]
                 else
                     scroll page + 1
-        scroll 0
+        scroll 1
 
     findAll: (owner, repo, criteria) ->
         matches = []
@@ -30,15 +30,16 @@ module.exports = class Releases
                 return matches if res.length is 0
                 matches.push r for r in res.filter criteria
                 scroll page + 1
-        scroll 0
+        scroll 1
 
     createRelease: (owner, repo, tag_name) ->
         ncall @client.releases.createRelease, { owner, repo, tag_name }
 
     createDraft: (owner, repo, branch, version) ->
-        ncall @client.releases.createRelease, { owner, repo, tag_name: branch, draft: true, name: version, body: "This is an automatically created draft which holds release artifacts for the #{branch} branch." }
+        ncall @client.releases.createRelease, { owner, repo, tag_name: version, draft: true, name: version, body: "This is an automatically created draft which holds development artifacts." }
 
     deleteRelease: (owner, repo, id) ->
+        console.log 'delete', id
         ncall @client.releases.deleteRelease, { owner, repo, id }
 
     upload: (owner, repo, id, name, filePath) ->

@@ -50,3 +50,21 @@ describe 'Releases', ->
             releases.findAll('owner', 'repo', (rel) -> rel.id > 8)
             .then (res) ->
                 res.should.eql [ ]
+
+    describe '.createDraft()', ->
+        beforeEach ->
+            client =
+                releases:
+                    createRelease: stub().callsArgWith 1, undefined
+            opts = {}
+            releases = new Releases opts, client
+
+        it 'sets tag_name', ->
+            releases.createDraft 'myowner', 'myrepo', 'mytag', 'myversion'
+            .then ->
+                client.releases.createRelease.should.have.been.calledWith match
+                    owner: 'myowner'
+                    repo: 'myrepo'
+                    tag_name: 'myversion'
+                    name: 'myversion'
+                    draft: true
