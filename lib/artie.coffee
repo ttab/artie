@@ -12,7 +12,7 @@ module.exports = class Artie
         throw new Error "repository type must be 'git'" if pkg.repository.type and pkg.repository.type isnt 'git'
         url = pkg.repository.url or pkg.repository
         try
-            [ full, host, owner, repo ] = url.match /^(github:|https:\/\/github.com\/)?([\w-]*)\/([\w-]*)$/
+            [ full, host, owner, repo ] = url.match /^(github:|https:\/\/github.com\/)?([\w-]*)\/([\w-]*?)(.git)?$/
             { owner, repo }
         catch err
             throw new Error "could not parse GitHub url:", url
