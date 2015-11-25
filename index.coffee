@@ -34,7 +34,7 @@ program.command('upload')
             log.info 'Done.'
         .catch (err) ->
             log.error err
-            log.error err.stack? or err.toString()
+            log.error if err.stack? then err.stack else err.toString()
             process.exit 1
         .done()
 
@@ -45,7 +45,7 @@ program.command('download <owner> <repo>')
         .then ->
             log.info 'Done.'
         .catch (err) ->
-            log.error err.stack? or err.toString()
+            log.error if err.stack? then err.stack else err.toString()
             process.exit 1
         .done()
 
