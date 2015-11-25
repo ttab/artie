@@ -60,7 +60,7 @@ describe 'Releases', ->
             releases = new Releases opts, client
 
         it 'sets tag_name', ->
-            releases.createDraft 'myowner', 'myrepo', 'mytag', 'myversion'
+            releases.createDraft 'myowner', 'myrepo', 'myversion'
             .then ->
                 client.releases.createRelease.should.have.been.calledWith match
                     owner: 'myowner'

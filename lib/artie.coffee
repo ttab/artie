@@ -63,7 +63,7 @@ module.exports = class Artie
                         rel
                     else
                         log.info "Creating draft", art.version
-                        @releases.createDraft owner, repo, art.branch, art.version
+                        @releases.createDraft owner, repo, art.version
             ).then (rel) =>
                 log.info "Uploading #{art.name} to #{(owner + '/' + repo + '#' + rel.name)}"
                 @releases.upload owner, repo, rel.id, art.name, art.path

@@ -35,7 +35,7 @@ module.exports = class Releases
     createRelease: (owner, repo, tag_name) ->
         ncall @client.releases.createRelease, { owner, repo, tag_name }
 
-    createDraft: (owner, repo, branch, version) ->
+    createDraft: (owner, repo, version) ->
         ncall @client.releases.createRelease, { owner, repo, tag_name: version, draft: true, name: version, body: "This is an automatically created draft which holds development artifacts." }
 
     deleteRelease: (owner, repo, id) ->

@@ -153,7 +153,7 @@ describe 'Artie', ->
             it 'creates a new draft release if necessary', ->
                 releases.find.withArgs('myowner', 'myrepo', match.func).returns When undefined
                 artie.upload().then ->
-                    releases.createDraft.should.have.been.calledWith 'myowner', 'myrepo', 'master', 'v2.3.0-1-g05fc9e7'
+                    releases.createDraft.should.have.been.calledWith 'myowner', 'myrepo', 'v2.3.0-1-g05fc9e7'
                     releases.upload.should.have.been.calledWith 'myowner', 'myrepo', 3
 
             it 'uploads the artifact', ->
