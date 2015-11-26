@@ -53,6 +53,15 @@ describe 'Artie', ->
                 owner: 'ttab'
                 repo: 'my-project'
 
+        it 'returns the owner and repo name for a git@repo.git', ->
+            artie._parseRepository
+                repository:
+                    type: 'git'
+                    url: 'git@github.com:ttab/my-project.git'
+            .should.eql
+                owner: 'ttab'
+                repo: 'my-project'
+
         it 'returns the owner and repo name for a short url', ->
             artie._parseRepository
                 repository: 'github:ttab/my-project'
