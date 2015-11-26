@@ -8,12 +8,20 @@ Releases  = require './lib/releases'
 Cfg       = require './lib/cfg'
 GitHubApi = require 'github'
 
+collect = (val, coll) ->
+    coll.push val
+    coll
+
 program.version(require('./package').version)
     .option('-n, --node [version]')
     .option('-o, --os <os>', 'Platform [linux]', 'linux')
     .option('-a, --arch <arch>', 'Processor architecture [x64]', 'x64')
     .option('-p, --production', 'Only download production ready releases')
     .option('-t, --token <oAuth token>', 'OAuth token', process.env.GITHUB_OAUTH_TOKEN)
+    .option('-j, --json <true/false>', 'Generate build.json', true)
+    .option('-e, --env [variable]', 'Include environment var in build.json', collect, [
+        'BUILD_NUMER', 'BUILD_ID', 'BUILD_URL', 'BUILD_TAG', 'GIT_COMMIT', 'GIT_URL', 'GIT_BRANCH'
+    ])
     .option('-v, --verbose')
 
 artie = ->

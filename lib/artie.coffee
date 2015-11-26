@@ -35,48 +35,57 @@ module.exports = class Artie
     upload: ->
         When.all([
             @cfg.fromPackageJson()
-            @artifact.create()
-        ]).spread (pkg, art) =>
+            @cfg.fromGitVersion()
+        ]).spread (pkg, git) =>
             { owner, repo } = @_parseRepository pkg
-            (if art.release
-                @releases.find owner, repo, (rel) ->
-                    if rel.draft is false and
-                        rel.prerelease is false and
-                        rel.tag_name is art.tag
-                    then rel
-                .then (rel) =>
-                    if rel
-                        log.info "Found release", art.tag
-                        rel
-                    else
-                        log.info "Creating release", art.tag
-                        @releases.createRelease owner, repo, art.tag
+            (if @opts.json
+                env = {}
+                env[key] = process.env[key] for key in @opts.env
+                ncall fs.writeFile, 'build.json', JSON.stringify git: git, env: env
             else
-                @releases.find owner, repo, (rel) ->
-                    if rel.draft is true and
-                        rel.prerelease is false and
-                        rel.name is art.version
-                    then rel
+                When()
+            ).then =>
+                @artifact.create()
+            .then (art) =>
+                (if art.release
+                    @releases.find owner, repo, (rel) ->
+                        if rel.draft is false and
+                            rel.prerelease is false and
+                            rel.tag_name is art.tag
+                        then rel
+                    .then (rel) =>
+                        if rel
+                            log.info "Found release", art.tag
+                            rel
+                        else
+                            log.info "Creating release", art.tag
+                            @releases.createRelease owner, repo, art.tag
+                else
+                    @releases.find owner, repo, (rel) ->
+                        if rel.draft is true and
+                            rel.prerelease is false and
+                            rel.name is art.version
+                        then rel
+                    .then (rel) =>
+                        if rel
+                            log.info "Found draft", art.version
+                            rel
+                        else
+                            log.info "Creating draft", art.version
+                            @releases.createDraft owner, repo, art.version
+                ).then (rel) =>
+                    log.info "Uploading #{art.name} to #{(owner + '/' + repo + '#' + rel.name)}"
+                    @releases.upload owner, repo, rel.id, art.name, art.path
                 .then (rel) =>
-                    if rel
-                        log.info "Found draft", art.version
+                    @releases.findAll owner, repo, (rel) ->
+                        return rel.draft is true and
+                            rel.body.match(/^This is an automatically created draft/) and
+                            rel.name isnt art.version
+                    .then (drafts) =>
+                        log.info "Deleting old drafts..."
+                        When.all (@releases.deleteRelease owner, repo, draft.id for draft in drafts)
+                    .then ->
                         rel
-                    else
-                        log.info "Creating draft", art.version
-                        @releases.createDraft owner, repo, art.version
-            ).then (rel) =>
-                log.info "Uploading #{art.name} to #{(owner + '/' + repo + '#' + rel.name)}"
-                @releases.upload owner, repo, rel.id, art.name, art.path
-            .then (rel) =>
-                @releases.findAll owner, repo, (rel) ->
-                    return rel.draft is true and
-                        rel.body.match(/^This is an automatically created draft/) and
-                        rel.name isnt art.version
-                .then (drafts) =>
-                    log.info "Deleting old drafts..."
-                    When.all (@releases.deleteRelease owner, repo, draft.id for draft in drafts)
-                .then ->
-                    rel
 
     download: (owner, repo) ->
         log.info "Looking for #{if @opts.production then 'production ' else ''}#{@opts.os}/#{@opts.arch} artifacts..."

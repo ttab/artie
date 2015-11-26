@@ -77,13 +77,19 @@ describe 'Artie', ->
                 repo: 'my-project'
 
     describe '.upload()', ->
-        opts = cfg = artifact = releases = undefined
+        opts = cfg = fs = artifact = releases = undefined
         beforeEach ->
-            Artie = require '../lib/artie'
-            opts = {}
+            fs =
+                writeFile: spy (file, data, cb) -> cb undefined
+            Artie = proxyquire '../lib/artie', { 'fs', fs }
+            opts =
+                json: true
+                env: []
             cfg =
                 fromPackageJson: stub().returns When
                     repository: 'github:myowner/myrepo'
+                fromGitVersion: stub().returns When
+                    version: 'myversion'
             artifact =
                 create: stub()
             releases =
@@ -106,6 +112,13 @@ describe 'Artie', ->
                     path: '/dir/myrepo-v2.0.0-bin-linux-x64.nar'
                     release: true
                     branch: 'master'
+
+            it 'writes to build.json', ->
+                artie.upload().then ->
+                    fs.writeFile.should.have.been.calledWith 'build.json', JSON.stringify
+                        git:
+                            version: 'myversion'
+                        env: {}
 
             it 'it finds the corresponding tagged release', ->
                 releases.find.withArgs('myowner', 'myrepo', match.func).returns When
