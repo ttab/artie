@@ -17,6 +17,7 @@ program.version(require('./package').version)
     .option('-v, --verbose')
 
 artie = ->
+    log.level 'debug' if program.verbose
     github = new GitHubApi version: '3.0.0'
     github.authenticate
         type: 'oauth',

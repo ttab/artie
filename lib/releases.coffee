@@ -39,7 +39,7 @@ module.exports = class Releases
         ncall @client.releases.createRelease, { owner, repo, tag_name: version, draft: true, name: version, body: "This is an automatically created draft which holds development artifacts." }
 
     deleteRelease: (owner, repo, id) ->
-        console.log 'delete', id
+        log.debug "Deleting release #{owner}/#{repo}/#{id}"
         ncall @client.releases.deleteRelease, { owner, repo, id }
 
     upload: (owner, repo, id, name, filePath) ->
