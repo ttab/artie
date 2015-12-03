@@ -51,6 +51,20 @@ describe 'Releases', ->
             .then (res) ->
                 res.should.eql [ ]
 
+    describe '.createRelease()', ->
+        beforeEach ->
+            client =
+                releases:
+                    createRelease: stub().callsArgWith 1, undefined
+            opts = {}
+            releases = new Releases opts, client
+
+        it 'sets the name', ->
+            releases.createRelease 'myowner', 'myrepo', 'mytag'
+            .then ->
+                client.releases.createRelease.should.have.been.calledWith match
+                    name: 'mytag'
+
     describe '.createDraft()', ->
         beforeEach ->
             client =

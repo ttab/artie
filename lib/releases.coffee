@@ -33,7 +33,7 @@ module.exports = class Releases
         scroll 1
 
     createRelease: (owner, repo, tag_name) ->
-        ncall @client.releases.createRelease, { owner, repo, tag_name }
+        ncall @client.releases.createRelease, { owner, repo, tag_name, name: tag_name }
 
     createDraft: (owner, repo, version) ->
         ncall @client.releases.createRelease, { owner, repo, tag_name: version, draft: true, name: version, body: "This is an automatically created draft which holds development artifacts." }
