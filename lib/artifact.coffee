@@ -34,7 +34,7 @@ module.exports = class Artifact
                     log.info 'Downloading binary...'
                 .on 'generate', ->
                     log.info 'Generating executable...'
-                .on 'file', (file) ->
+                .on 'entry', (file) ->
                     log.debug 'Add [' + file.type + ']', file.name
                 .on 'archive', (file) ->
                     log.info 'Add [' + file.type + ']', file.name
