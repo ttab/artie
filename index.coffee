@@ -11,10 +11,11 @@ When      = require 'when'
 # instantiate all components and wire them up
 artie = (program) ->
     log.level 'debug' if program.verbose
+    program.token = program.token or process.env.GITHUB_OAUTH_TOKEN
     github = new GitHubApi version: '3.0.0'
     github.authenticate
         type: 'oauth',
-        token: program.token or process.env.GITHUB_OAUTH_TOKEN or throw 'OAuth token needed'
+        token: program.token or throw 'OAuth token needed'
     cfg      = new Cfg()
     artifact = new Artifact(program, cfg)
     releases = new Releases(program, github)
@@ -52,7 +53,7 @@ buildArgs = (fn) -> (yargs, argv) ->
 require('yargs')
     .usage('Usage: artie <command> [args]')
     .command 'build', 'Package this project as an executable.', buildArgs('build')
-    .command 'upload', 'Build this project, then upload it to github', buildArgs('build')
+    .command 'upload', 'Build this project, then upload it to github', buildArgs('upload')
     .command 'download', 'Fetch the latest packaged executable from github.', (yargs, argv) ->
         argv = yargs
             .usage("Usage: artie download <owner> <repo> [options]")

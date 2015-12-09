@@ -1,10 +1,11 @@
-log     = require 'bog'
-fs      = require 'fs'
-moment  = require 'moment'
-request = require 'request'
-When    = require 'when'
-ncall   = require('when/node').call
-tmp     = require 'tmp'
+log      = require 'bog'
+fs       = require 'fs'
+moment   = require 'moment'
+https    = require 'https'
+When     = require 'when'
+ncall    = require('when/node').call
+tmp      = require 'tmp'
+urlParse = require('url').parse
 
 module.exports = class Releases
 
@@ -50,25 +51,35 @@ module.exports = class Releases
             ncall(fs.stat, name).catch(->)
             ncall tmp.file
         ]).spread (stats, [tmpPath, tmpFd]) =>
+            # helper fn
+            request = (url, headers) ->
+                delete headers[key] for key, val of headers when not val
+                When.promise (resolve, reject) =>
+                    params = urlParse url
+                    params.headers = headers
+                    https.get params, (res) ->
+                        resolve res
+                    .on 'error', (err) -> reject err
+
             When.promise (resolve, reject) =>
                 modified = if stats then moment(stats.mtime).utc().format('ddd, DD MMM YYYY HH:mm:ss ') + 'GMT'
-                request.get
-                    url: url
-                    headers:
-                        'Authorization': "token #{@opts.token}"
-                        'Accept': "application/octet-stream"
-                        'User-Agent': 'artie'
-                        'If-Modified-Since': modified
-                .on 'error', (err) -> reject new Error err
-                .on 'response', (res) ->
+                request url,
+                    'Authorization': "token #{@opts.token}"
+                    'Accept': "application/octet-stream"
+                    'User-Agent': 'artie'
+                    'If-Modified-Since': modified
+                .then (res) ->
+                    console.log res.statusCode
                     if res.statusCode is 304
                         log.info 'Nothing to do here; local artifact newer than remote.'
                         resolve false
                     else
                         log.info 'Downloading...'
-                        When.promise (resolve, reject) ->
-                            res.pipe(fs.createWriteStream(undefined, { fd: tmpFd }))
-                            .on 'error', (err) -> reject new Error err
-                            .on 'finish', -> resolve()
+                        request res.headers.location, {}
+                        .then (res) ->
+                            When.promise (resolve, reject) ->
+                                res.pipe(fs.createWriteStream(undefined, { fd: tmpFd }))
+                                .on 'error', (err) -> reject new Error err
+                                .on 'finish', -> resolve()
                         .then -> ncall fs.rename, tmpPath, name
                         .then -> resolve true
