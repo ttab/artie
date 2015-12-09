@@ -67,19 +67,17 @@ module.exports = class Releases
                     'Authorization': "token #{@opts.token}"
                     'Accept': "application/octet-stream"
                     'User-Agent': 'artie'
-                    'If-Modified-Since': modified
                 .then (res) ->
-                    console.log res.statusCode
-                    if res.statusCode is 304
-                        log.info 'Nothing to do here; local artifact newer than remote.'
-                        resolve false
-                    else
-                        log.info 'Downloading...'
-                        request res.headers.location, {}
-                        .then (res) ->
+                    request res.headers.location, { 'If-Modified-Since': modified }
+                    .then (res) ->
+                        if res.statusCode is 304
+                            log.info 'Nothing to do here; local artifact newer than remote.'
+                            resolve false
+                        else
+                            log.info 'Downloading...'
                             When.promise (resolve, reject) ->
                                 res.pipe(fs.createWriteStream(undefined, { fd: tmpFd }))
                                 .on 'error', (err) -> reject new Error err
                                 .on 'finish', -> resolve()
-                        .then -> ncall fs.rename, tmpPath, name
-                        .then -> resolve true
+                            .then -> ncall fs.rename, tmpPath, name
+                            .then -> resolve true
