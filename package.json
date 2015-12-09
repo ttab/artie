@@ -16,14 +16,13 @@
   "license": "MIT",
   "dependencies": {
     "bog": "^1.0.0",
-    "commander": "^2.9.0",
     "findup": "^0.1.5",
     "github": "^0.2.4",
     "moment": "^2.10.6",
     "nar": "^0.3.26",
-    "request": "^2.67.0",
     "tmp": "0.0.28",
-    "when": "^3.7.4"
+    "when": "^3.7.4",
+    "yargs": "^3.31.0"
   },
   "devDependencies": {
     "chai": "^3.4.1",
