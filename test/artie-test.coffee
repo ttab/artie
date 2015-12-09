@@ -85,6 +85,42 @@ describe 'Artie', ->
                 owner: 'ttab'
                 repo: 'my-project'
 
+    describe '.build()', ->
+        opts = cfg = fs = artifact = releases = undefined
+        beforeEach ->
+            fs =
+                writeFile: spy (file, data, cb) -> cb undefined
+            Artie = proxyquire '../lib/artie', { 'fs', fs }
+            opts =
+                json: true
+                env: []
+            cfg =
+                fromPackageJson: stub().returns When
+                    repository: 'github:myowner/myrepo'
+                fromGitVersion: stub().returns When
+                    version: 'myversion'
+            artifact =
+                create: stub()
+            releases =
+                find: stub().returns When undefined
+                findAll: stub().returns When [ ]
+                upload: stub().returns When {}
+                createRelease: stub().returns When { id: 2 }
+                createDraft: stub().returns When { id: 3 }
+                deleteRelease: stub().returns When {}
+            artie = new Artie opts, cfg, artifact, releases
+
+        it 'writes to build.json', ->
+            artie.build().then ->
+                fs.writeFile.should.have.been.calledWith 'build.json', JSON.stringify
+                    git:
+                        version: 'myversion'
+                    env: {}
+
+        it 'creates the artifact', ->
+            artie.build().then ->
+                artifact.create.should.have.been.calledOnce
+
     describe '.upload()', ->
         opts = cfg = fs = artifact = releases = undefined
         beforeEach ->
@@ -121,13 +157,6 @@ describe 'Artie', ->
                     path: '/dir/myrepo-v2.0.0-bin-linux-x64.nar'
                     release: true
                     branch: 'master'
-
-            it 'writes to build.json', ->
-                artie.upload().then ->
-                    fs.writeFile.should.have.been.calledWith 'build.json', JSON.stringify
-                        git:
-                            version: 'myversion'
-                        env: {}
 
             it 'it finds the corresponding tagged release', ->
                 releases.find.withArgs('myowner', 'myrepo', match.func).returns When

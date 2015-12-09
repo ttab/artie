@@ -35,27 +35,26 @@ artie = ->
     releases = new Releases(program, github)
     artie    = new Artie(program, cfg, artifact, releases)
 
+run = (fn) -> ->
+    fn()
+    .then ->
+        log.info 'Done.'
+    .catch (err) ->
+        log.error err
+        log.error if err.stack? then err.stack else err.toString()
+        process.exit 1
+    .done()
+
+program.command('build')
+    .description('Package this project as an executable.')
+    .action run -> artie().build()
+
 program.command('upload')
-    .description('Package this project as an executable and upload it to github.')
-    .action () ->
-        artie().upload()
-        .then ->
-            log.info 'Done.'
-        .catch (err) ->
-            log.error err
-            log.error if err.stack? then err.stack else err.toString()
-            process.exit 1
-        .done()
+    .description('Build this project, then upload it to github.')
+    .action run -> artie().upload()
 
 program.command('download <owner> <repo>')
-    .description('Fetch the latest packaged executable from github')
-    .action (owner, repo) ->
-        artie().download(owner, repo)
-        .then ->
-            log.info 'Done.'
-        .catch (err) ->
-            log.error if err.stack? then err.stack else err.toString()
-            process.exit 1
-        .done()
+    .description('Fetch the latest packaged executable from github.')
+    .action run -> artie().download()
 
 program.parse(process.argv)

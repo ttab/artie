@@ -32,12 +32,11 @@ module.exports = class Artie
                 return parsed.os == @opts.os and parsed.arch == @opts.arch
         assets[0]
 
-    upload: ->
+    build: ->
         When.all([
             @cfg.fromPackageJson()
             @cfg.fromGitVersion()
         ]).spread (pkg, git) =>
-            { owner, repo } = @_parseRepository pkg
             (if @opts.json
                 env = {}
                 env[key] = process.env[key] for key in @opts.env
@@ -46,7 +45,14 @@ module.exports = class Artie
                 When()
             ).then =>
                 @artifact.create()
-            .then (art) =>
+
+    upload: ->
+        When.all([
+            @cfg.fromPackageJson()
+            @cfg.fromGitVersion()
+        ]).spread (pkg, git) =>
+            { owner, repo } = @_parseRepository pkg
+            @build().then (art) =>
                 (if art.release
                     @releases.find owner, repo, (rel) ->
                         if rel.draft is false and
