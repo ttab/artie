@@ -61,6 +61,7 @@ require('yargs')
             .option('a', { alias: 'arch', 'processor architecture', default: 'x64' })
             .option('o', { alias: 'os', description: 'platform', default: 'linux' })
             .option('p', { alias: 'production', description: 'only download production ready releases' })
+            .option('t', { alias: 'token', 'github OAuth token' })
             .argv
         run 'download', argv, argv._[1], argv._[2]
     .help('h')
