@@ -1,11 +1,13 @@
-fs    = require 'fs'
-log   = require 'bog'
-When  = require 'when'
-ncall = require('when/node').call
+fs      = require 'fs'
+log     = require 'bog'
+patches = require './patches'
+path    = require 'path'
+When    = require 'when'
+ncall   = require('when/node').call
 
 module.exports = class Artie
 
-    constructor: (@opts, @cfg, @artifact, @releases) ->
+    constructor: (@opts, @cfg, @artifact, @releases, @patches={}) ->
 
     _parseRepository: (pkg) ->
         throw new Error "missing 'repository' in package.json" unless pkg.repository
@@ -32,6 +34,25 @@ module.exports = class Artie
                 return parsed.os == @opts.os and parsed.arch == @opts.arch
         assets[0]
 
+    _applyPatches: ->
+        applyPatch = (module, vals) ->
+            file = path.join('.', 'node_modules', module, 'package.json')
+            fs.access file, fs.R_OK | fs.W_OK, (err) ->
+                return When() if err # file not found; which is okay
+                ncall fs.readFile, file
+                .then (data) ->
+                    pkg = JSON.parse(data)
+                    modified = modified
+                    for key, val of vals
+                        do (key, val) ->
+                            unless pkg[key]?
+                                pkg[key] = val
+                                modified = true
+                    if modified
+                        log.info "Patching #{file}"
+                        ncall fs.writeFile, file, JSON.stringify(pkg, null, 2)
+        When.all(applyPatch module, vals for module, vals of patches)
+
     build: ->
         When.all([
             @cfg.fromPackageJson()
@@ -44,6 +65,8 @@ module.exports = class Artie
             else
                 When()
             ).then =>
+                @_applyPatches()
+            .then =>
                 @artifact.create()
 
     upload: ->
