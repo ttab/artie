@@ -1,5 +1,4 @@
-artie
-=====
+# artie
 
  * Creates release packages from node.js projects. The packages
    are self-contained executables.
