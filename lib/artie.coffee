@@ -103,8 +103,21 @@ module.exports = class Artie
                             log.info "Creating draft", art.version
                             @releases.createDraft owner, repo, art.version
                 ).then (rel) =>
-                    log.info "Uploading #{art.name} to #{(owner + '/' + repo + '#' + rel.name)}"
-                    @releases.upload owner, repo, rel.id, art.name, art.path
+                    retries = 5
+                    upload = =>
+                        log.info "Uploading #{art.name} to #{(owner + '/' + repo + '#' + rel.name)}"
+                        @releases.upload owner, repo, rel.id, art.name, art.path
+                        .catch (err) =>
+                            retries -= 1
+                            if retries > 0 and not JSON.stringify(err).match /already_exists/
+                                @releases.deleteAssets owner, repo, rel.id
+                                .finally =>
+                                    When().delay(1000).then => upload()
+                            else
+                                throw err
+                    upload()
+                    .then (rel) =>
+                        @releases.deleteAssets owner, repo, rel.id
                 .then (rel) =>
                     @releases.findAll owner, repo, (rel) ->
                         return rel.draft is true and

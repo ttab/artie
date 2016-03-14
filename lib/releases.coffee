@@ -40,8 +40,16 @@ module.exports = class Releases
         ncall @client.releases.createRelease, { owner, repo, tag_name: version, draft: true, name: version, body: "This is an automatically created draft which holds development artifacts." }
 
     deleteRelease: (owner, repo, id) ->
-        log.debug "Deleting release #{owner}/#{repo}/#{id}"
+        log.info "Deleting release #{owner}/#{repo}/#{id}"
         ncall @client.releases.deleteRelease, { owner, repo, id }
+
+    deleteAssets: (owner, repo, id) ->
+        ncall @client.releases.listAssets, { owner, repo, id }
+        .then (assets) =>
+            deleteAsset = (asset) =>
+                log.info "Deleting asset #{owner}/#{repo}/asset/#{id}"
+                ncall @client.releases.deleteAsset, { owner, repo, id: asset.id }
+            When.all(deleteAsset asset for asset in assets)
 
     upload: (owner, repo, id, name, filePath) ->
         ncall @client.releases.uploadAsset, { owner, repo, id, name, filePath }

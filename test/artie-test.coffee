@@ -144,6 +144,7 @@ describe 'Artie', ->
                 createRelease: stub().returns When { id: 2 }
                 createDraft: stub().returns When { id: 3 }
                 deleteRelease: stub().returns When {}
+                deleteAssets: stub().returns When {}
             artie = new Artie opts, cfg, artifact, releases
 
         describe 'for production releases', ->
@@ -179,6 +180,30 @@ describe 'Artie', ->
                 artie.upload().then ->
                     releases.upload.should.have.been.calledWith 'myowner', 'myrepo', 1,
                         'myrepo-v2.0.0-bin-linux-x64.nar', '/dir/myrepo-v2.0.0-bin-linux-x64.nar'
+
+            it 'deletes the release and tries again if there was an error', ->
+                releases.find.withArgs('myowner', 'myrepo', match.func).returns When
+                    id: 1, draft: false, prerelease: false, tag_name: 'v2.0.0'
+                releases.upload.onFirstCall().returns When.reject { error: 'panda attack!', code: 502 }
+                artie.upload().then ->
+                    releases.deleteAssets.should.have.been.calledWith 'myowner', 'myrepo', 1
+                    releases.upload.should.have.been.calledTwice
+
+            it 'gives up on trying to upload if we fail repeatedly', ->
+                @timeout 10000
+                releases.find.withArgs('myowner', 'myrepo', match.func).returns When
+                    id: 1, draft: false, prerelease: false, tag_name: 'v2.0.0'
+                releases.upload.returns When.reject { error: 'panda attack!', code: 502 }
+                artie.upload().should.eventually.be.rejected
+
+            it 'does not try again if the error was that the release already exists', (done) ->
+                releases.find.withArgs('myowner', 'myrepo', match.func).returns When
+                    id: 1, draft: false, prerelease: false, tag_name: 'v2.0.0'
+                releases.upload.onFirstCall().returns When.reject { error: 'Asset already exists', code: 'already_exists' }
+                artie.upload().catch (err) ->
+                    releases.deleteAssets.should.not.have.been.called
+                    releases.upload.should.have.been.calledOnce
+                    done()
 
         describe 'for development releases', ->
             beforeEach ->
