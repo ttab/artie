@@ -116,8 +116,6 @@ module.exports = class Artie
                             else
                                 throw err
                     upload()
-                    .then (rel) =>
-                        @releases.deleteAssets owner, repo, rel.id
                 .then (rel) =>
                     @releases.findAll owner, repo, (rel) ->
                         return rel.draft is true and
