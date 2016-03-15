@@ -124,6 +124,7 @@ module.exports = class Artie
                     .then (drafts) =>
                         log.info "Deleting old drafts..."
                         When.all (@releases.deleteRelease owner, repo, draft.id for draft in drafts)
+                        .catch (err) -> log.warn err
                     .then ->
                         rel
 

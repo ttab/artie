@@ -262,6 +262,12 @@ describe 'Artie', ->
                     releases.deleteRelease.should.have.been.calledWith 'myowner', 'myrepo', 1
                     releases.deleteRelease.should.have.been.calledWith 'myowner', 'myrepo', 2
 
+            it 'does not fail the build if unable to delete previous drafts', ->
+                releases.find.withArgs('myowner', 'myrepo', match.func).returns When
+                    id: 1, draft: true, prerelease: false, tag_name: null, target_commitish: 'master'
+                releases.findAll.returns When [ { id: 1 }, { id: 2 } ]
+                releases.deleteRelease.returns When.reject { message: "Not allowed", code: 405 }
+                artie.upload().should.eventually.be.fulfilled
 
     describe '.download()', ->
         Artie = artie = fs = opts = cfg = artifact = releases = undefined
