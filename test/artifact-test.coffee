@@ -56,6 +56,7 @@ describe 'Artifact', ->
                 res.should.have.property 'version', 'v1.0.0'
                 res.should.have.property 'release', true
                 res.should.have.property 'branch', 'master'
+                res.should.have.property 'pkg', 'myproject'
 
         it 'returns an object describing a development artifact', ->
             path = '/my/dir/myproject-v2.3.0-1-g05fc9e7-bin-myos-myarch.nar'
@@ -70,3 +71,4 @@ describe 'Artifact', ->
                 res.should.have.property 'version', 'v2.3.0-1-g05fc9e7'
                 res.should.have.property 'release', false
                 res.should.have.property 'branch', 'master'
+                res.should.have.property 'pkg', 'myproject'

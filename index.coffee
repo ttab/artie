@@ -6,6 +6,7 @@ Artifact  = require './lib/artifact'
 patches   = require './lib/patches'
 Releases  = require './lib/releases'
 Cfg       = require './lib/cfg'
+notify    = require './lib/notify'
 GitHubApi = require 'github'
 When      = require 'when'
 
@@ -20,7 +21,7 @@ artie = (program) ->
     cfg      = new Cfg()
     artifact = new Artifact(program, cfg)
     releases = new Releases(program, github)
-    artie    = new Artie(program, cfg, artifact, releases, patches)
+    artie    = new Artie(program, cfg, artifact, releases, patches, notify)
 
 # run a command inside a promise, handling errors and such
 run = (fn, opts, args...) ->

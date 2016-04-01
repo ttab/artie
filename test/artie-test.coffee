@@ -122,7 +122,7 @@ describe 'Artie', ->
                 artifact.create.should.have.been.calledOnce
 
     describe '.upload()', ->
-        opts = cfg = fs = artifact = releases = undefined
+        opts = cfg = fs = artifact = releases = notify = undefined
         beforeEach ->
             fs =
                 writeFile: spy (file, data, cb) -> cb undefined
@@ -145,7 +145,8 @@ describe 'Artie', ->
                 createDraft: stub().returns When { id: 3 }
                 deleteRelease: stub().returns When {}
                 deleteAssets: stub().returns When {}
-            artie = new Artie opts, cfg, artifact, releases
+            notify = spy()
+            artie = new Artie opts, cfg, artifact, releases, {}, notify
 
         describe 'for production releases', ->
             beforeEach ->
@@ -154,6 +155,7 @@ describe 'Artie', ->
                     version: 'v2.0.0'
                     os: 'linux'
                     arch: 'x64'
+                    pkg: 'myrepo'
                     name: 'myrepo-v2.0.0-bin-linux-x64.nar'
                     path: '/dir/myrepo-v2.0.0-bin-linux-x64.nar'
                     release: true
@@ -180,6 +182,12 @@ describe 'Artie', ->
                 artie.upload().then ->
                     releases.upload.should.have.been.calledWith 'myowner', 'myrepo', 1,
                         'myrepo-v2.0.0-bin-linux-x64.nar', '/dir/myrepo-v2.0.0-bin-linux-x64.nar'
+
+            it 'invokes notify function', ->
+                releases.find.withArgs('myowner', 'myrepo', match.func).returns When
+                    id: 1, draft: false, prerelease: false, tag_name: 'v2.0.0'
+                artie.upload().then ->
+                    notify.should.have.been.calledWith "released myrepo v2.0.0"
 
             it 'deletes the release and tries again if there was an error', ->
                 releases.find.withArgs('myowner', 'myrepo', match.func).returns When

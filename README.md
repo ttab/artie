@@ -51,3 +51,10 @@ setting the `GITHUB_OAUTH_TOKEN` environment variable.
 
 [nar]:https://github.com/h2non/nar
 [narcfg]:https://github.com/h2non/nar#configuration
+
+## Slack notifications
+
+```
+export SLACK_WEBHOOK=https://hooks.slack.com/services/ASD28TH/B0asdCQ/6876786sd8f6asdasdgxcv
+export SLACK_CHANNEL=general
+```

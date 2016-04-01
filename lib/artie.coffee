@@ -7,7 +7,7 @@ ncall   = require('when/node').call
 
 module.exports = class Artie
 
-    constructor: (@opts, @cfg, @artifact, @releases, @patches={}) ->
+    constructor: (@opts, @cfg, @artifact, @releases, @patches={}, @notify) ->
 
     _parseRepository: (pkg) ->
         throw new Error "missing 'repository' in package.json" unless pkg.repository
@@ -116,6 +116,10 @@ module.exports = class Artie
                             else
                                 throw err
                     upload()
+                .then (rel) =>
+                    if art.release
+                        @notify "released #{art.pkg ? art.name} #{art.version}"
+                    rel
                 .then (rel) =>
                     @releases.findAll owner, repo, (rel) ->
                         return rel.draft is true and
