@@ -1,5 +1,7 @@
 # artie
 
+Node.js release management.
+
  * Creates release packages from node.js projects. The packages
    are self-contained executables.
  * Uploads packages as attached files to GitHub releases.
