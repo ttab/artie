@@ -2,6 +2,11 @@
 
 Node.js release management.
 
+![Version](http://img.shields.io/npm/v/artie.svg) &nbsp;
+![License](http://img.shields.io/npm/l/artie.svg) &nbsp;
+![Monthly downloads](http://img.shields.io/npm/dm/artie.svg) &nbsp;
+![Build Status](https://ci.tt.se/jenkins/buildStatus/icon?job=artie&random=1234)
+
  * Creates release packages from node.js projects. The packages
    are self-contained executables.
  * Uploads packages as attached files to GitHub releases.
