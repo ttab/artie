@@ -108,6 +108,7 @@ module.exports = class Artie
                         log.info "Uploading #{art.name} to #{(owner + '/' + repo + '#' + rel.name)}"
                         @releases.upload owner, repo, rel.id, art.name, art.path
                         .catch (err) =>
+                            log.error 'upload error', err
                             retries -= 1
                             if retries > 0 and not JSON.stringify(err).match /already_exists/
                                 @releases.deleteAssets owner, repo, rel.id
