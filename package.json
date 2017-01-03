@@ -16,10 +16,11 @@
   "license": "MIT",
   "dependencies": {
     "bog": "^1.0.0",
+    "coffee-script": "^1.10.0",
     "findup": "^0.1.5",
     "github": "^0.2.4",
     "moment": "^2.11.1",
-    "nar": "^0.3.37",
+    "nar": "0.3.37",
     "slack-node": "^0.2.0",
     "tmp": "0.0.28",
     "when": "^3.7.7",
@@ -28,7 +29,6 @@
   "devDependencies": {
     "chai": "^3.4.1",
     "chai-as-promised": "^5.2.0",
-    "coffee-script": "^1.10.0",
     "mocha": "^2.3.4",
     "proxyquire": "^1.7.3",
     "sinon": "^1.17.2",
